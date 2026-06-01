@@ -1,0 +1,3 @@
+debug: variable 'x' -> index -4
+
+exit status: 0

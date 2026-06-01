@@ -1,0 +1,4 @@
+debug: variable 'x' -> index -4
+debug: variable 'y' -> index -8
+
+exit status: 0

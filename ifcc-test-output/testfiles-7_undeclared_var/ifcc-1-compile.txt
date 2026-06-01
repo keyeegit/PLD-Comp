@@ -1,0 +1,4 @@
+error: variable 'x' used but not declared
+error: semantic error during symbol table construction
+
+exit status: 1
