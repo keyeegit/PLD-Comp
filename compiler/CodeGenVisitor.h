@@ -2,8 +2,8 @@
 
 #include "antlr4-runtime.h"
 #include "generated/ifccBaseVisitor.h"
-#include <map>    // for std::map
-#include <string> // for std::string
+#include <map>
+#include <string>
 
 class CodeGenVisitor : public ifccBaseVisitor
 {

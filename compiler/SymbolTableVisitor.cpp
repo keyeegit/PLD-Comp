@@ -31,11 +31,10 @@ antlrcpp::Any SymbolTableVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *c
         std::cerr << "debug: variable '" << name << "' -> index " << nextOffset << "\n";
     }
 
-    // int a = expr;  →  check RHS if it's a variable
     if (ctx->expr())
     {
         this->visit(ctx->expr());
-        usedVars.insert(name); // Mark the variable as used if it's initialized
+        usedVars.insert(name);
     }
 
     return 0;
