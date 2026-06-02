@@ -64,7 +64,7 @@ int main(int argn, const char **argv)
         exit(1);
     }
 
-    CodeGenVisitor v;
+    CodeGenVisitor v(stv.symbolTable);
     v.visit(tree);
 
     return 0;

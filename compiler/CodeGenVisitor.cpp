@@ -39,7 +39,9 @@ antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
         std::cout << "    add sp, sp, #" << stackSize << "\n"; // free local variable space
     std::cout << "    ldp x29, x30, [sp], #16\n";              // restore frame pointer and return address
 #else
-    std::cout << "    popq %rbp\n"; // restore caller's base pointer
+    if (stackSize > 0)
+        std::cout << "    addq $" << stackSize << ", %rsp\n";
+    std::cout << "    popq %rbp\n";
 #endif
     std::cout << "    ret\n";
 
@@ -50,13 +52,11 @@ antlrcpp::Any CodeGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 antlrcpp::Any CodeGenVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 {
     std::string varName = ctx->ID()->getText();
-    nextOffset -= 4;
-    symbolTable[varName] = nextOffset;
 
     if (ctx->expr())
     {
         int lhsOffset = symbolTable[varName];
-        this->visit(ctx->expr()); // result in w8 / eax
+        this->visit(ctx->expr());
 #ifdef __APPLE__
         std::cout << "    str w8, [x29, #" << lhsOffset << "]\n";
 #else

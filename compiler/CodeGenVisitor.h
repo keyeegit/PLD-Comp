@@ -8,6 +8,8 @@
 class CodeGenVisitor : public ifccBaseVisitor
 {
 public:
+        CodeGenVisitor(std::map<std::string, int> symbolTable) : symbolTable(symbolTable) {}
+
         virtual antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
         virtual antlrcpp::Any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
         virtual antlrcpp::Any visitDecl_stmt(ifccParser::Decl_stmtContext *ctx) override;
@@ -20,5 +22,4 @@ public:
 
 private:
         std::map<std::string, int> symbolTable;
-        int nextOffset = 0;
 };
