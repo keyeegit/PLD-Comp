@@ -1,5 +1,0 @@
-debug: variable 'x' -> index -4
-error: variable 'x' declared more than once
-error: semantic error during symbol table construction
-
-exit status: 1

@@ -1,3 +1,0 @@
-debug: variable 'a' -> index -4
-
-exit status: 0

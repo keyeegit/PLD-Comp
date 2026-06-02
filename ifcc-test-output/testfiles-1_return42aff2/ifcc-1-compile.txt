@@ -1,4 +1,0 @@
-debug: variable 'a' -> index -4
-debug: variable 'b' -> index -8
-
-exit status: 0
