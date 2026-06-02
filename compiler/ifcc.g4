@@ -7,9 +7,17 @@ prog : 'int' 'main' '(' ')' '{' stmt* return_stmt '}' ;
 stmt : decl_stmt | assign_stmt ;
 decl_stmt : 'int' ID ('=' expr)? ';' ;
 assign_stmt : ID '=' expr ';' ;
-expr : ID | CONST ;
 
-return_stmt : RETURN (CONST | ID) ';' ;
+expr
+    : '-' expr                     # unaryMinusExpr
+    | expr op=('*'|'/'|'%') expr   # mulDivExpr
+    | expr op=('+'|'-') expr       # addSubExpr
+    | '(' expr ')'                 # parenExpr
+    | ID                           # idExpr
+    | CONST                        # constExpr
+    ;
+
+return_stmt : RETURN expr ';' ;
 
 RETURN : 'return' ;
 CONST : [0-9]+ ;

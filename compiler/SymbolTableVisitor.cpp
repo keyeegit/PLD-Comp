@@ -32,23 +32,11 @@ antlrcpp::Any SymbolTableVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *c
     }
 
     // int a = expr;  →  check RHS if it's a variable
-    if (ctx->expr() && ctx->expr()->ID())
-    {
-        std::string rhs = ctx->expr()->ID()->getText();
-        if (!symbolTable.count(rhs))
-        {
-            std::cerr << "error: variable '" << rhs << "' used but not declared\n";
-            hasError = true;
-        }
-        else
-        {
-            usedVars.insert(rhs);
-        }
-    }
-
-    // the variable itself counts as used if it's initialized
     if (ctx->expr())
-        usedVars.insert(name);
+    {
+        this->visit(ctx->expr());
+        usedVars.insert(name); // Mark the variable as used if it's initialized
+    }
 
     return 0;
 }
@@ -68,36 +56,31 @@ antlrcpp::Any SymbolTableVisitor::visitAssign_stmt(ifccParser::Assign_stmtContex
     }
 
     // Check RHS if it's a variable (not a constant)
-    if (ctx->expr()->ID())
+    if (ctx->expr())
     {
-        std::string rhs = ctx->expr()->ID()->getText();
-        if (!symbolTable.count(rhs))
-        {
-            std::cerr << "error: variable '" << rhs << "' used but not declared\n";
-            hasError = true;
-        }
-        else
-        {
-            usedVars.insert(rhs);
-        }
+        this->visit(ctx->expr());
     }
+
     return 0;
 }
 
 antlrcpp::Any SymbolTableVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
-    if (ctx->ID())
+    this->visit(ctx->expr());
+    return 0;
+}
+
+antlrcpp::Any SymbolTableVisitor::visitIdExpr(ifccParser::IdExprContext *ctx)
+{
+    std::string name = ctx->ID()->getText();
+    if (!symbolTable.count(name))
     {
-        std::string name = ctx->ID()->getText();
-        if (!symbolTable.count(name))
-        {
-            std::cerr << "error: variable '" << name << "' used but not declared\n";
-            hasError = true;
-        }
-        else
-        {
-            usedVars.insert(name);
-        }
+        std::cerr << "error: variable '" << name << "' used but not declared\n";
+        hasError = true;
+    }
+    else
+    {
+        usedVars.insert(name);
     }
     return 0;
 }

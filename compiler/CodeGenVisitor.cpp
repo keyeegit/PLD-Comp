@@ -53,32 +53,15 @@ antlrcpp::Any CodeGenVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
     nextOffset -= 4;
     symbolTable[varName] = nextOffset;
 
-    // int x = 42;  or  int x = y;
     if (ctx->expr())
     {
         int lhsOffset = symbolTable[varName];
-        if (ctx->expr()->CONST())
-        {
-            int value = stoi(ctx->expr()->CONST()->getText());
+        this->visit(ctx->expr()); // result in w8 / eax
 #ifdef __APPLE__
-            std::cout << "    mov w8, #" << value << "\n";
-            std::cout << "    str w8, [x29, #" << lhsOffset << "]\n";
+        std::cout << "    str w8, [x29, #" << lhsOffset << "]\n";
 #else
-            std::cout << "    movl $" << value << ", " << lhsOffset << "(%rbp)\n";
+        std::cout << "    movl %eax, " << lhsOffset << "(%rbp)\n";
 #endif
-        }
-        else
-        {
-            std::string rhs = ctx->expr()->ID()->getText();
-            int rhsOffset = symbolTable[rhs];
-#ifdef __APPLE__
-            std::cout << "    ldr w8, [x29, #" << rhsOffset << "]\n";
-            std::cout << "    str w8, [x29, #" << lhsOffset << "]\n";
-#else
-            std::cout << "    movl " << rhsOffset << "(%rbp), %eax\n";
-            std::cout << "    movl %eax, " << lhsOffset << "(%rbp)\n";
-#endif
-        }
     }
     return 0;
 }
@@ -89,56 +72,119 @@ antlrcpp::Any CodeGenVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *c
     std::string lhs = ctx->ID()->getText();
     int lhsOffset = symbolTable[lhs];
 
-    if (ctx->expr()->CONST())
-    {
-        // x = 42;
-        int value = stoi(ctx->expr()->CONST()->getText());
+    this->visit(ctx->expr()); // result in w8 / eax
 #ifdef __APPLE__
-        std::cout << "    mov w8, #" << value << "\n";
-        std::cout << "    str w8, [x29, #" << lhsOffset << "]\n";
+    std::cout << "    str w8, [x29, #" << lhsOffset << "]\n";
 #else
-        std::cout << "    movl $" << value << ", " << lhsOffset << "(%rbp)\n";
+    std::cout << "    movl %eax, " << lhsOffset << "(%rbp)\n";
 #endif
-    }
-    else
-    {
-        // x = y;
-        std::string rhs = ctx->expr()->ID()->getText();
-        int rhsOffset = symbolTable[rhs];
-#ifdef __APPLE__
-        std::cout << "    ldr w8, [x29, #" << rhsOffset << "]\n";
-        std::cout << "    str w8, [x29, #" << lhsOffset << "]\n";
-#else
-        std::cout << "    movl " << rhsOffset << "(%rbp), %eax\n";
-        std::cout << "    movl %eax, " << lhsOffset << "(%rbp)\n";
-#endif
-    }
     return 0;
 }
 
-// return x; or return 42;
+// return expr;
 antlrcpp::Any CodeGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
-    if (ctx->CONST())
-    {
-        // returning a literal number
-        int retval = stoi(ctx->CONST()->getText());
+    this->visit(ctx->expr()); // result in w8 / eax
 #ifdef __APPLE__
-        std::cout << "    mov w0, #" << retval << "\n"; // put value in return register
-#else
-        std::cout << "    movl $" << retval << ", %eax\n"; // put value in return register
+    std::cout << "    mov w0, w8\n"; // move result to return register
 #endif
-    }
+    // on x86-64 the result is already in eax, nothing to do
+    return 0;
+}
+
+antlrcpp::Any CodeGenVisitor::visitUnaryMinusExpr(ifccParser::UnaryMinusExprContext *ctx)
+{
+    this->visit(ctx->expr()); // result in w8 / eax
+#ifdef __APPLE__
+    std::cout << "    neg w8, w8\n";
+#else
+    std::cout << "    negl %eax\n";
+#endif
+    return 0;
+}
+
+antlrcpp::Any CodeGenVisitor::visitIdExpr(ifccParser::IdExprContext *ctx)
+{
+    std::string varName = ctx->ID()->getText();
+#ifdef __APPLE__
+    std::cout << "    ldr w8, [x29, #" << symbolTable[varName] << "]\n"; // load variable into w8
+#else
+    std::cout << "    movl " << symbolTable[varName] << "(%rbp), %eax\n"; // load variable into eax
+#endif
+    return 0;
+}
+
+antlrcpp::Any CodeGenVisitor::visitConstExpr(ifccParser::ConstExprContext *ctx)
+{
+    int value = stoi(ctx->CONST()->getText());
+#ifdef __APPLE__
+    std::cout << "    mov w8, #" << value << "\n"; // load constant into w8
+#else
+    std::cout << "    movl $" << value << ", %eax\n"; // load constant into eax
+#endif
+    return 0;
+}
+
+antlrcpp::Any CodeGenVisitor::visitMulDivExpr(ifccParser::MulDivExprContext *ctx)
+{
+    this->visit(ctx->expr(0)); // résultat gauche → w8/eax
+#ifdef __APPLE__
+    std::cout << "    sub sp, sp, #16\n";
+    std::cout << "    str w8, [sp]\n"; // sauvegarde gauche sur la pile
+    this->visit(ctx->expr(1));         // résultat droit → w8
+    std::cout << "    ldr w9, [sp]\n"; // récupère gauche dans w9
+    std::cout << "    add sp, sp, #16\n";
+    std::string op = ctx->op->getText();
+    if (op == "*")
+        std::cout << "    mul w8, w9, w8\n";
+    else if (op == "/")
+        std::cout << "    sdiv w8, w9, w8\n";
+    else
+        std::cout << "    sdiv w10, w9, w8\n" // %
+                  << "    msub w8, w10, w8, w9\n";
+#else
+    std::cout << "    pushq %rax\n";
+    this->visit(ctx->expr(1));
+    std::cout << "    movl %eax, %ecx\n";
+    std::cout << "    popq %rax\n";
+    std::string op = ctx->op->getText();
+    if (op == "*")
+        std::cout << "    imull %ecx, %eax\n";
     else
     {
-        // returning a variable — load it from the stack
-        std::string varName = ctx->ID()->getText();
-        int offset = symbolTable[varName]; // e.g. -4
-#ifdef __APPLE__
-        std::cout << "    ldr w0, [x29, #" << offset << "]\n"; // load x from memory into w0
-#else
-        std::cout << "    movl " << offset << "(%rbp), %eax\n"; // load x from memory into eax
-#endif
+        std::cout << "    cltd\n"        // signe-extend eax → edx:eax
+                  << "    idivl %ecx\n"; // eax=quotient, edx=reste
+        if (op == "%")
+            std::cout << "    movl %edx, %eax\n";
     }
+#endif
+    return 0;
+}
+
+antlrcpp::Any CodeGenVisitor::visitAddSubExpr(ifccParser::AddSubExprContext *ctx)
+{
+    this->visit(ctx->expr(0)); // résultat gauche → w8/eax
+#ifdef __APPLE__
+    std::cout << "    sub sp, sp, #16\n";
+    std::cout << "    str w8, [sp]\n"; // sauvegarde gauche sur la pile
+    this->visit(ctx->expr(1));         // résultat droit → w8
+    std::cout << "    ldr w9, [sp]\n"; // récupère gauche dans w9
+    std::cout << "    add sp, sp, #16\n";
+    std::string op = ctx->op->getText();
+    if (op == "+")
+        std::cout << "    add w8, w9, w8\n";
+    else
+        std::cout << "    sub w8, w9, w8\n";
+#else
+    std::cout << "    pushq %rax\n";
+    this->visit(ctx->expr(1));
+    std::cout << "    movl %eax, %ecx\n";
+    std::cout << "    popq %rax\n";
+    std::string op = ctx->op->getText();
+    if (op == "+")
+        std::cout << "    addl %ecx, %eax\n";
+    else
+        std::cout << "    subl %ecx, %eax\n";
+#endif
     return 0;
 }
