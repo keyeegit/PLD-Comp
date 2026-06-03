@@ -5,37 +5,44 @@
 include config.mk
 
 CC=g++
-CCFLAGS=-g -c -std=c++17 -I$(ANTLRINC) -Wno-attributes # -Wno-defaulted-function-deleted -Wno-unknown-warning-option
+# -I. permet aux fichiers dans frontend/, ir/, backend/ de trouver les headers
+# via des chemins comme "generated/ifccParser.h" ou "ir/IR.h"
+CCFLAGS=-g -c -std=c++17 -I$(ANTLRINC) -I. -Wno-attributes
 LDFLAGS=-g
+
+# VPATH : make cherche les .cpp dans ces dossiers (en plus du dossier courant)
+VPATH=frontend:ir:backend
 
 default: all
 all: ifcc
 
 ##########################################
-# link together all pieces of our compiler 
+# link together all pieces of our compiler
 OBJECTS=build/ifccBaseVisitor.o \
 	build/ifccLexer.o \
 	build/ifccVisitor.o \
 	build/ifccParser.o \
 	build/main.o \
-	build/CodeGenVisitor.o \
-	build/SymbolTableVisitor.o
+	build/SymbolTableVisitor.o \
+	build/IRGenVisitor.o \
+	build/x86Backend.o \
+	build/ARMBackend.o
 
 ifcc: $(OBJECTS)
 	@mkdir -p build
-	$(CC) $(LDFLAGS) build/*.o $(ANTLRLIB) -o ifcc
+	$(CC) $(LDFLAGS) $(OBJECTS) $(ANTLRLIB) -o ifcc
 
 ##########################################
-# compile our hand-writen C++ code: main(), CodeGenVisitor, etc.
+# compile our hand-written C++ (VPATH résout les sous-dossiers)
 build/%.o: %.cpp generated/ifccParser.cpp
 	@mkdir -p build
-	$(CC) $(CCFLAGS) -MMD -o $@ $< 
+	$(CC) $(CCFLAGS) -MMD -o $@ $<
 
 ##########################################
 # compile all the antlr-generated C++
 build/%.o: generated/%.cpp
 	@mkdir -p build
-	$(CC) $(CCFLAGS) -MMD -o $@ $< 
+	$(CC) $(CCFLAGS) -MMD -o $@ $<
 
 # automagic dependency management: `gcc -MMD` generates all the .d files for us
 -include build/*.d
