@@ -17,26 +17,28 @@ antlrcpp::Any SymbolTableVisitor::visitProg(ifccParser::ProgContext *ctx)
 
 antlrcpp::Any SymbolTableVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 {
-    std::string name = ctx->ID()->getText();
-
-    if (symbolTable.count(name))
+    for (auto* item : ctx->decl_item())
     {
-        std::cerr << "error: variable '" << name << "' declared more than once\n";
-        hasError = true;
-    }
-    else
-    {
-        nextOffset -= 4;
-        symbolTable[name] = nextOffset;
-        std::cerr << "debug: variable '" << name << "' -> index " << nextOffset << "\n";
-    }
+        std::string name = item->ID()->getText();
 
-    if (ctx->expr())
-    {
-        this->visit(ctx->expr());
-        usedVars.insert(name);
-    }
+        if (symbolTable.count(name))
+        {
+            std::cerr << "error: variable '" << name << "' declared more than once\n";
+            hasError = true;
+        }
+        else
+        {
+            nextOffset -= 4;
+            symbolTable[name] = nextOffset;
+            std::cerr << "debug: variable '" << name << "' -> index " << nextOffset << "\n";
+        }
 
+        if (item->expr())
+        {
+            this->visit(item->expr());
+            usedVars.insert(name);
+        }
+    }
     return 0;
 }
 

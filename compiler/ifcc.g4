@@ -5,7 +5,8 @@ axiom : prog EOF ;
 prog : 'int' 'main' '(' ')' '{' stmt* return_stmt '}' ;
 
 stmt : decl_stmt | assign_stmt ;
-decl_stmt : 'int' ID ('=' expr)? ';' ;
+decl_stmt : 'int' decl_item (',' decl_item)* ';' ;
+decl_item : ID ('=' expr)? ;
 assign_stmt : ID '=' expr ';' ;
 
 expr

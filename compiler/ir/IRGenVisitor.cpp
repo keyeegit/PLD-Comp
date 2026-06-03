@@ -24,9 +24,11 @@ antlrcpp::Any IRGenVisitor::visitProg(ifccParser::ProgContext* ctx) {
 }
 
 antlrcpp::Any IRGenVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext* ctx) {
-    if (ctx->expr()) {
-        std::string src = str(visit(ctx->expr()));
-        emit({IRInstr::COPY, ctx->ID()->getText(), src});
+    for (auto* item : ctx->decl_item()) {
+        if (item->expr()) {
+            std::string src = str(visit(item->expr()));
+            emit({IRInstr::COPY, item->ID()->getText(), src});
+        }
     }
     return 0;
 }
