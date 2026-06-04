@@ -15,7 +15,11 @@ struct IRInstr
         DIV,
         MOD,
         NEG,
-        RET
+        RET,
+        CMP_EQ,
+        CMP_NEQ,
+        CMP_LT,
+        CMP_GT,
     };
     Op op;
     std::string dest;

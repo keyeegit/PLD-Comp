@@ -14,3 +14,4 @@
 | Avertissement variable inutilisée | Warning si une variable est déclarée mais jamais lue  |
 | Génération x86-64                 | Code assembleur pour Linux / Intel                    |
 | Génération ARM64                  | Code assembleur pour macOS Apple Silicon              |
+| Opérations de comparaison         | `==`, `!=`, `<`, `>`                                  |
