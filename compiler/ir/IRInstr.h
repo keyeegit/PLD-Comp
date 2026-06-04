@@ -20,6 +20,7 @@ struct IRInstr
         CMP_NEQ,
         CMP_LT,
         CMP_GT,
+        NOT,
     };
     Op op;
     std::string dest;

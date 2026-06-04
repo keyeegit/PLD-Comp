@@ -117,3 +117,11 @@ antlrcpp::Any IRGenVisitor::visitCmpExpr(ifccParser::CmpExprContext *ctx)
     emit({op, t, l, r});
     return t;
 }
+
+antlrcpp::Any IRGenVisitor::visitNotExpr(ifccParser::NotExprContext *ctx)
+{
+    std::string src = str(visit(ctx->expr()));
+    std::string t = newTemp();
+    emit({IRInstr::NOT, t, src});
+    return t;
+}

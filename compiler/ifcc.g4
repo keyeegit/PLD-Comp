@@ -14,6 +14,7 @@ expr
     | expr op=('*'|'/'|'%') expr   # mulDivExpr
     | expr op=('+'|'-') expr       # addSubExpr
     | expr op=('=='|'!='|'<'|'>') expr  # cmpExpr
+    | '!' expr                     # notExpr
     | '(' expr ')'                 # parenExpr
     | ID                           # idExpr
     | CONST                        # constExpr

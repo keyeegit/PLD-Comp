@@ -5,6 +5,7 @@
 | Opérations arithmétiques de base  | `+`, `-`, `*`                                         |
 | Division et modulo                | `/`, `%`                                              |
 | Négation unaire                   | `-expr`                                               |
+| Not unaire                        | `!expr`                                               |
 | Précédence des opérateurs         | `*`, `/`, `%` avant `+`, `-` ; associativité gauche   |
 | Parenthèses                       | Forçage de la priorité d'évaluation                   |
 | Déclaration de variable           | `int x;` ou `int x = expr;`                           |

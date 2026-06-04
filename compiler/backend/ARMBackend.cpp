@@ -115,6 +115,12 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         o << "    cset w8, gt\n";
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
+    case IRInstr::NOT:
+        o << "    ldr w8, " << adr(i.src1) << "\n";
+        o << "    cmp w8, #0\n";
+        o << "    cset w8, eq\n";
+        o << "    str w8, " << adr(i.dest) << "\n";
+        break;
     }
 }
 

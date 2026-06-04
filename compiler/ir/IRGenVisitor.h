@@ -20,6 +20,7 @@ public:
     antlrcpp::Any visitIdExpr(ifccParser::IdExprContext *ctx) override;
     antlrcpp::Any visitConstExpr(ifccParser::ConstExprContext *ctx) override;
     antlrcpp::Any visitCmpExpr(ifccParser::CmpExprContext *ctx) override;
+    antlrcpp::Any visitNotExpr(ifccParser::NotExprContext *ctx) override;
 
 private:
     IRProgram program;
