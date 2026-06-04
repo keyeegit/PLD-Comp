@@ -119,6 +119,24 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         o << "    movzbl %al, %eax\n";
         o << "    movl %eax, " << adr(i.dest) << "\n";
         break;
+    case IRInstr::CMP_AND:
+        o << "    movl " << adr(i.src1) << ", %eax\n";
+        o << "    movl " << adr(i.src2) << ", %ecx\n";
+        o << "    andl %ecx, %eax\n";
+        o << "    movl %eax, " << adr(i.dest) << "\n";
+        break;
+    case IRInstr::CMP_OR:
+        o << "    movl " << adr(i.src1) << ", %eax\n";
+        o << "    movl " << adr(i.src2) << ", %ecx\n";
+        o << "    orl %ecx, %eax\n";
+        o << "    movl %eax, " << adr(i.dest) << "\n";
+        break;
+    case IRInstr::CMP_XOR:
+        o << "    movl " << adr(i.src1) << ", %eax\n";
+        o << "    movl " << adr(i.src2) << ", %ecx\n";
+        o << "    xorl %ecx, %eax\n";
+        o << "    movl %eax, " << adr(i.dest) << "\n";
+        break;
     case IRInstr::NOT:
         o << "    movl " << adr(i.src1) << ", %eax\n";
         o << "    cmpl $0, %eax\n";

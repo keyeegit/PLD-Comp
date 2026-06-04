@@ -115,6 +115,24 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         o << "    cset w8, gt\n";
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
+    case IRInstr::CMP_AND:
+        o << "    ldr w8, " << adr(i.src1) << "\n";
+        o << "    ldr w9, " << adr(i.src2) << "\n";
+        o << "    and w8, w8, w9\n";
+        o << "    str w8, " << adr(i.dest) << "\n";
+        break;
+    case IRInstr::CMP_OR:
+        o << "    ldr w8, " << adr(i.src1) << "\n";
+        o << "    ldr w9, " << adr(i.src2) << "\n";
+        o << "    orr w8, w8, w9\n";
+        o << "    str w8, " << adr(i.dest) << "\n";
+        break;
+    case IRInstr::CMP_XOR:
+        o << "    ldr w8, " << adr(i.src1) << "\n";
+        o << "    ldr w9, " << adr(i.src2) << "\n";
+        o << "    eor w8, w8, w9\n";
+        o << "    str w8, " << adr(i.dest) << "\n";
+        break;
     case IRInstr::NOT:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    cmp w8, #0\n";

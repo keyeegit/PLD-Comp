@@ -118,6 +118,20 @@ antlrcpp::Any IRGenVisitor::visitCmpExpr(ifccParser::CmpExprContext *ctx)
     return t;
 }
 
+antlrcpp::Any IRGenVisitor::visitCmpBit(ifccParser::CmpBitContext *ctx)
+{
+    std::string l = str(visit(ctx->expr(0)));
+    std::string r = str(visit(ctx->expr(1)));
+    std::string t = newTemp();
+    std::string opStr = ctx->op->getText();
+    IRInstr::Op op = (opStr == "&")   ? IRInstr::CMP_AND
+                     : (opStr == "|") ? IRInstr::CMP_OR
+                     : (opStr == "^")  ? IRInstr::CMP_XOR
+                                       : throw std::runtime_error("Unknown bitwise operator");
+    emit({op, t, l, r});
+    return t;
+}
+
 antlrcpp::Any IRGenVisitor::visitNotExpr(ifccParser::NotExprContext *ctx)
 {
     std::string src = str(visit(ctx->expr()));

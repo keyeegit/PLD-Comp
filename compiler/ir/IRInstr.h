@@ -21,6 +21,9 @@ struct IRInstr
         CMP_LT,
         CMP_GT,
         NOT,
+        CMP_AND,
+        CMP_OR,
+        CMP_XOR,
     };
     Op op;
     std::string dest;

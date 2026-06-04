@@ -16,3 +16,4 @@
 | Génération x86-64                 | Code assembleur pour Linux / Intel                    |
 | Génération ARM64                  | Code assembleur pour macOS Apple Silicon              |
 | Opérations de comparaison         | `==`, `!=`, `<`, `>`                                  |
+| Opérations de comparaison bit à bit        | `&`, `\|`, `^`                                  |
