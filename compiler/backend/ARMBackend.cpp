@@ -156,5 +156,8 @@ void ARMBackend::generate(std::ostream &o, const IRProgram &prog)
     emitPrologue(o, prog, sz);
     for (const auto &i : prog.instrs)
         emitInstr(o, i, prog);
+    // If the last instruction is not a RET, we need to return 0 by default
+    if (prog.instrs.empty() || prog.instrs.back().op != IRInstr::RET)
+        o << "    mov w0, #0\n";
     emitEpilogue(o, sz);
 }
