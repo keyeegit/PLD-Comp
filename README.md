@@ -17,3 +17,4 @@
 | Génération ARM64                       | Code assembleur pour macOS Apple Silicon              |
 | Opérations de comparaison              | `==`, `!=`, `<`, `>`                                  |
 | Opérations de comparaison bit à bit    | `&`, `\|`, `^`                                        |
+| Constantes caractère                   | `'a'`, `'A'` — converties en valeur ASCII entière     |
