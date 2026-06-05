@@ -103,7 +103,20 @@ antlrcpp::Any IRGenVisitor::visitConstExpr(ifccParser::ConstExprContext *ctx)
     return t;
 }
 
-antlrcpp::Any IRGenVisitor::visitCmpExpr(ifccParser::CmpExprContext *ctx)
+antlrcpp::Any IRGenVisitor::visitRelCmpExpr(ifccParser::RelCmpExprContext *ctx)
+{
+    std::string l = str(visit(ctx->expr(0)));
+    std::string r = str(visit(ctx->expr(1)));
+    std::string t = newTemp();
+    std::string opStr = ctx->op->getText();
+    IRInstr::Op op = (opStr == "<")  ? IRInstr::CMP_LT
+                     : (opStr == ">")  ? IRInstr::CMP_GT
+                                       : throw std::runtime_error("Unknown comparison operator");
+    emit({op, t, l, r});
+    return t;
+}
+
+antlrcpp::Any IRGenVisitor::visitEqCmpExpr(ifccParser::EqCmpExprContext *ctx)
 {
     std::string l = str(visit(ctx->expr(0)));
     std::string r = str(visit(ctx->expr(1)));
@@ -111,24 +124,35 @@ antlrcpp::Any IRGenVisitor::visitCmpExpr(ifccParser::CmpExprContext *ctx)
     std::string opStr = ctx->op->getText();
     IRInstr::Op op = (opStr == "==")   ? IRInstr::CMP_EQ
                      : (opStr == "!=") ? IRInstr::CMP_NEQ
-                     : (opStr == "<")  ? IRInstr::CMP_LT
-                     : (opStr == ">")  ? IRInstr::CMP_GT
                                        : throw std::runtime_error("Unknown comparison operator");
     emit({op, t, l, r});
     return t;
 }
 
-antlrcpp::Any IRGenVisitor::visitCmpBit(ifccParser::CmpBitContext *ctx)
+antlrcpp::Any IRGenVisitor::visitBitAndExpr(ifccParser::BitAndExprContext *ctx)
 {
     std::string l = str(visit(ctx->expr(0)));
     std::string r = str(visit(ctx->expr(1)));
     std::string t = newTemp();
-    std::string opStr = ctx->op->getText();
-    IRInstr::Op op = (opStr == "&")   ? IRInstr::CMP_AND
-                     : (opStr == "|") ? IRInstr::CMP_OR
-                     : (opStr == "^") ? IRInstr::CMP_XOR
-                                      : throw std::runtime_error("Unknown bitwise operator");
-    emit({op, t, l, r});
+    emit({IRInstr::CMP_AND, t, l, r});
+    return t;
+}
+
+antlrcpp::Any IRGenVisitor::visitBitXorExpr(ifccParser::BitXorExprContext *ctx)
+{
+    std::string l = str(visit(ctx->expr(0)));
+    std::string r = str(visit(ctx->expr(1)));
+    std::string t = newTemp();
+    emit({IRInstr::CMP_XOR, t, l, r});
+    return t;
+}
+
+antlrcpp::Any IRGenVisitor::visitBitOrExpr(ifccParser::BitOrExprContext *ctx)
+{
+    std::string l = str(visit(ctx->expr(0)));
+    std::string r = str(visit(ctx->expr(1)));
+    std::string t = newTemp();
+    emit({IRInstr::CMP_OR, t, l, r});
     return t;
 }
 

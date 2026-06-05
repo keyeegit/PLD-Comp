@@ -10,16 +10,19 @@ decl_item : ID ('=' expr)? ;
 assign_stmt : ID '=' expr ';' ;
 
 expr
-    : '-' expr                     # unaryMinusExpr
-    | expr op=('*'|'/'|'%') expr   # mulDivExpr
-    | expr op=('+'|'-') expr       # addSubExpr
-    | expr op=('=='|'!='|'<'|'>') expr  # cmpExpr
-    | expr op=('&'|'|'|'^') expr   # cmpBit
-    | '!' expr                     # notExpr
-    | '(' expr ')'                 # parenExpr
-    | ID                           # idExpr
-    | CONST                        # constExpr
-    | CHAR_CONST                   # charConstExpr
+    : '-' expr                          # unaryMinusExpr
+    | '!' expr                          # notExpr
+    | expr op=('*'|'/'|'%') expr        # mulDivExpr
+    | expr op=('+'|'-') expr            # addSubExpr
+    | expr op=('<'|'>') expr            # relCmpExpr
+    | expr op=('=='|'!=') expr          # eqCmpExpr
+    | expr '&' expr                     # bitAndExpr
+    | expr '^' expr                     # bitXorExpr
+    | expr '|' expr                     # bitOrExpr
+    | '(' expr ')'                      # parenExpr
+    | ID                                # idExpr
+    | CONST                             # constExpr
+    | CHAR_CONST                        # charConstExpr
     ;
 
 return_stmt : RETURN expr ';' ;

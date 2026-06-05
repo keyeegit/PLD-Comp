@@ -19,8 +19,11 @@ public:
     antlrcpp::Any visitParenExpr(ifccParser::ParenExprContext *ctx) override;
     antlrcpp::Any visitIdExpr(ifccParser::IdExprContext *ctx) override;
     antlrcpp::Any visitConstExpr(ifccParser::ConstExprContext *ctx) override;
-    antlrcpp::Any visitCmpExpr(ifccParser::CmpExprContext *ctx) override;
-    antlrcpp::Any visitCmpBit(ifccParser::CmpBitContext *ctx) override;
+    antlrcpp::Any visitRelCmpExpr(ifccParser::RelCmpExprContext *ctx) override;
+    antlrcpp::Any visitEqCmpExpr(ifccParser::EqCmpExprContext *ctx) override;
+    antlrcpp::Any visitBitAndExpr(ifccParser::BitAndExprContext *ctx) override;
+    antlrcpp::Any visitBitXorExpr(ifccParser::BitXorExprContext *ctx) override;
+    antlrcpp::Any visitBitOrExpr(ifccParser::BitOrExprContext *ctx) override;
     antlrcpp::Any visitNotExpr(ifccParser::NotExprContext *ctx) override;
     antlrcpp::Any visitCharConstExpr(ifccParser::CharConstExprContext *ctx) override;
 
