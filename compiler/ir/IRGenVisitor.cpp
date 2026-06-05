@@ -23,7 +23,6 @@ antlrcpp::Any IRGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
     for (auto *stmt : ctx->stmt())
         visit(stmt);
-    visit(ctx->return_stmt());
     return 0;
 }
 
