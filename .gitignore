@@ -23,7 +23,6 @@
 *.dll
 *.so.*
 
-
 # Fortran module files
 *.mod
 *.smod
@@ -76,3 +75,7 @@ compiler/generated/
 
 # ifcc-test-output
 ifcc-test-output/
+
+# Medias
+# Garder le sujet
+*.pdf
