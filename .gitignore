@@ -38,6 +38,7 @@
 *.exe
 *.out
 *.app
+compiler/ifcc
 
 # Build directories
 build/
