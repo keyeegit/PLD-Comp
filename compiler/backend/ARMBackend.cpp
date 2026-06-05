@@ -139,6 +139,14 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         o << "    cset w8, eq\n";
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
+    case IRInstr::PUTCHAR:
+        o << "    ldr w0, " << adr(i.src1) << "\n";
+        o << "    bl _putchar\n";
+        break;
+    case IRInstr::GETCHAR:
+        o << "    bl _getchar\n";
+        o << "    str w0, " << adr(i.dest) << "\n";
+        break;
     }
 }
 

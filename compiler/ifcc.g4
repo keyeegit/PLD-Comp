@@ -4,10 +4,12 @@ axiom : prog EOF ;
 
 prog : 'int' 'main' '(' ')' '{' stmt* return_stmt '}' ;
 
-stmt : decl_stmt | assign_stmt ;
+stmt : decl_stmt | assign_stmt | putchar_stmt | getchar_stmt ;
 decl_stmt : 'int' decl_item (',' decl_item)* ';' ;
 decl_item : ID ('=' expr)? ;
 assign_stmt : ID '=' expr ';' ;
+putchar_stmt : 'putchar' '(' expr ')' ';' ;
+getchar_stmt : 'getchar' '(' ')' ';' ;
 
 expr
     : '-' expr                          # unaryMinusExpr
@@ -23,6 +25,7 @@ expr
     | ID                                # idExpr
     | CONST                             # constExpr
     | CHAR_CONST                        # charConstExpr
+    | 'getchar' '(' ')'            # getcharExpr
     ;
 
 return_stmt : RETURN expr ';' ;

@@ -26,6 +26,9 @@ public:
     antlrcpp::Any visitBitOrExpr(ifccParser::BitOrExprContext *ctx) override;
     antlrcpp::Any visitNotExpr(ifccParser::NotExprContext *ctx) override;
     antlrcpp::Any visitCharConstExpr(ifccParser::CharConstExprContext *ctx) override;
+    antlrcpp::Any visitGetcharExpr(ifccParser::GetcharExprContext *ctx) override;
+    antlrcpp::Any visitPutchar_stmt(ifccParser::Putchar_stmtContext *ctx) override;
+    antlrcpp::Any visitGetchar_stmt(ifccParser::Getchar_stmtContext *ctx) override;
 
 private:
     IRProgram program;

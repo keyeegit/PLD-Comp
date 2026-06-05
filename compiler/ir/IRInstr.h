@@ -24,6 +24,8 @@ struct IRInstr
         CMP_AND,
         CMP_OR,
         CMP_XOR,
+        PUTCHAR,
+        GETCHAR,
     };
     Op op;
     std::string dest;

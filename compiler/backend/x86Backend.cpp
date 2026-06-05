@@ -144,6 +144,14 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         o << "    movzbl %al, %eax\n";
         o << "    movl %eax, " << adr(i.dest) << "\n";
         break;
+    case IRInstr::PUTCHAR:
+        o << "    movl " << adr(i.src1) << ", %edi\n";
+        o << "    call putchar\n";
+        break;
+    case IRInstr::GETCHAR:
+        o << "    call getchar\n";
+        o << "    movl %eax, " << adr(i.dest) << "\n";
+        break;
     }
 }
 

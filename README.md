@@ -20,3 +20,5 @@ Axel GARNIER Dimitri HUDE Guillaume KUSIAK Paul NADEAU Baptiste REYDET Bao Anh T
 | Opérations de comparaison              | `==`, `!=`, `<`, `>`                                  |
 | Opérations de comparaison bit à bit    | `&`, `\|`, `^`                                        |
 | Constantes caractère                   | `'a'`, `'A'` — converties en valeur ASCII entière     |
+| `putchar`                              | Affichage d'un caractère sur stdout                   |
+| `getchar`                              | Lecture d'un caractère depuis stdin                   |

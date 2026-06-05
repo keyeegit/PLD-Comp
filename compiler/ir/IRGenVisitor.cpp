@@ -172,3 +172,24 @@ antlrcpp::Any IRGenVisitor::visitCharConstExpr(ifccParser::CharConstExprContext 
     emit({IRInstr::LDCONST, t, "", "", static_cast<int>(c)});
     return t;
 }
+
+antlrcpp::Any IRGenVisitor::visitPutchar_stmt(ifccParser::Putchar_stmtContext *ctx)
+{
+    std::string src = str(visit(ctx->expr()));
+    emit({IRInstr::PUTCHAR, "", src});
+    return 0;
+}
+
+antlrcpp::Any IRGenVisitor::visitGetcharExpr(ifccParser::GetcharExprContext *ctx)
+{
+    std::string t = newTemp();
+    emit({IRInstr::GETCHAR, t});
+    return t;
+}
+
+antlrcpp::Any IRGenVisitor::visitGetchar_stmt(ifccParser::Getchar_stmtContext *ctx)
+{
+    std::string t = newTemp();
+    emit({IRInstr::GETCHAR, t});
+    return 0;
+}
