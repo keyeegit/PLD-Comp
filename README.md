@@ -1,4 +1,4 @@
-Axel GARNIER Dimitri HUDE Guillaume KUSIAK Paul NADEAU Baptiste REYDET Bao Anh TRAN
+GARNIER Axel, HUDE Dimitri, KUSIAK Guillaume, NADEAU Paul, REYDET Baptiste, TRAN Bao Anh
 
 # Fonctionnalités implémentées
 
