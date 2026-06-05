@@ -1,3 +1,5 @@
+Axel GARNIER Dimitri HUDE Guillaume KUSIAK Paul NADEAU Baptiste REYDET Bao Anh TRAN
+
 # Fonctionnalités implémentées
 
 | Fonctionnalité                         | Description                                           |
