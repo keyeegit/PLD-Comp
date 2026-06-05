@@ -19,12 +19,14 @@ expr
     | '(' expr ')'                 # parenExpr
     | ID                           # idExpr
     | CONST                        # constExpr
+    | CHAR_CONST                   # charConstExpr
     ;
 
 return_stmt : RETURN expr ';' ;
 
 RETURN : 'return' ;
 CONST : [0-9]+ ;
+CHAR_CONST : '\'' (~['\\\r\n] | '\\' .) '\'' ;
 ID : [a-zA-Z][a-zA-Z0-9]* ;
 COMMENT : '/*' .*? '*/' -> skip ;
 DIRECTIVE : '#' .*? '\n' -> skip ;
