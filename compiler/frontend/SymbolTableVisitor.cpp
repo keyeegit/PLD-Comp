@@ -9,14 +9,14 @@ antlrcpp::Any SymbolTableVisitor::visitProg(ifccParser::ProgContext *ctx)
 
 antlrcpp::Any SymbolTableVisitor::visitBlock(ifccParser::BlockContext *ctx)
 {
-    scopeStack.push_back({}); // Nouveau sous-scope d'accolades
+    scopeStack.push_back({});
 
     for (auto *stmt : ctx->stmt())
     {
         this->visit(stmt);
     }
 
-    scopeStack.pop_back(); // Les variables C meurent pour le C, mais restent dans globalSymbolTable !
+    scopeStack.pop_back(); 
 
     return 0;
 }
@@ -97,5 +97,15 @@ antlrcpp::Any SymbolTableVisitor::visitReturn_stmt(ifccParser::Return_stmtContex
 {
     // Le return visite simplement son expression, peu importe où il est placé
     this->visit(ctx->expr());
+    return 0;
+}
+
+antlrcpp::Any SymbolTableVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+    visit(ctx->expr());       
+    visit(ctx->stmt(0));      
+    if (ctx->stmt().size() > 1) {
+        visit(ctx->stmt(1));  
+    }
     return 0;
 }

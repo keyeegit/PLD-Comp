@@ -26,6 +26,9 @@ struct IRInstr
         CMP_XOR,
         PUTCHAR,
         GETCHAR,
+        LABEL,
+        CMP_CBR,
+        JMP,
     };
     Op op;
     std::string dest;

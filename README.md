@@ -24,3 +24,5 @@ GARNIER Axel, HUDE Dimitri, KUSIAK Guillaume, NADEAU Paul, REYDET Baptiste, TRAN
 | `putchar`                              | Affichage d'un caractère sur stdout                   |
 | `getchar`                              | Lecture d'un caractère depuis stdin                   |
 | Gestion de contexte avec les blocs de code { } | Gestion de contexte avec les blocs de code { }|
+| Support des portées de variables et du shadowing | Support des portées de variables et du shadowing |
+| Les structures de controle if, else    | Les structures de controle if, else                   |
