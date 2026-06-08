@@ -23,3 +23,4 @@ GARNIER Axel, HUDE Dimitri, KUSIAK Guillaume, NADEAU Paul, REYDET Baptiste, TRAN
 | Constantes caractère                   | `'a'`, `'A'` — converties en valeur ASCII entière     |
 | `putchar`                              | Affichage d'un caractère sur stdout                   |
 | `getchar`                              | Lecture d'un caractère depuis stdin                   |
+| Gestion de contexte avec les blocs de code { } | Gestion de contexte avec les blocs de code { }|

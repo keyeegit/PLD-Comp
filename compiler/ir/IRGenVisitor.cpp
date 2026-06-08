@@ -4,7 +4,6 @@ IRGenVisitor::IRGenVisitor(const std::map<std::string, int> &symbolTable)
 {
     program.funcName = "main";
     program.symbols = symbolTable;
-    // Les temporaires seront alloués après les variables nommées
     nextTempOffset = 0;
     for (auto &[_, off] : symbolTable)
         if (off < nextTempOffset)
@@ -21,8 +20,19 @@ std::string IRGenVisitor::newTemp()
 
 antlrcpp::Any IRGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
+    visit(ctx->block());
+    return 0;
+}
+
+antlrcpp::Any IRGenVisitor::visitBlock(ifccParser::BlockContext *ctx)
+{
+    scopeStack.push_back({}); // Nouveau sous-scope local
+
     for (auto *stmt : ctx->stmt())
         visit(stmt);
+
+    scopeStack.pop_back(); // Ferme le sous-scope
+
     return 0;
 }
 
@@ -30,10 +40,16 @@ antlrcpp::Any IRGenVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 {
     for (auto *item : ctx->decl_item())
     {
+        std::string name = item->ID()->getText();
+
+        // On reconstruit le même nom unique exact (ex: a_0, a_1...)
+        std::string uniqueName = name + "_b" + std::to_string(scopeStack.size());
+        scopeStack.back()[name] = uniqueName;
+
         if (item->expr())
         {
             std::string src = str(visit(item->expr()));
-            emit({IRInstr::COPY, item->ID()->getText(), src});
+            emit({IRInstr::COPY, uniqueName, src}); // On utilise le nom unique !
         }
     }
     return 0;
@@ -42,8 +58,15 @@ antlrcpp::Any IRGenVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 antlrcpp::Any IRGenVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *ctx)
 {
     std::string src = str(visit(ctx->expr()));
-    emit({IRInstr::COPY, ctx->ID()->getText(), src});
+    std::string uniqueName = getUniqueName(ctx->ID()->getText()); // Trouve le bon nom unique courant
+    emit({IRInstr::COPY, uniqueName, src});
     return 0;
+}
+
+antlrcpp::Any IRGenVisitor::visitIdExpr(ifccParser::IdExprContext *ctx)
+{
+    // Quand on lit une variable, on renvoie son nom unique associé dans le scope courant
+    return getUniqueName(ctx->ID()->getText());
 }
 
 antlrcpp::Any IRGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
@@ -89,11 +112,6 @@ antlrcpp::Any IRGenVisitor::visitParenExpr(ifccParser::ParenExprContext *ctx)
     return visit(ctx->expr());
 }
 
-antlrcpp::Any IRGenVisitor::visitIdExpr(ifccParser::IdExprContext *ctx)
-{
-    return ctx->ID()->getText();
-}
-
 antlrcpp::Any IRGenVisitor::visitConstExpr(ifccParser::ConstExprContext *ctx)
 {
     std::string t = newTemp();
@@ -108,9 +126,9 @@ antlrcpp::Any IRGenVisitor::visitRelCmpExpr(ifccParser::RelCmpExprContext *ctx)
     std::string r = str(visit(ctx->expr(1)));
     std::string t = newTemp();
     std::string opStr = ctx->op->getText();
-    IRInstr::Op op = (opStr == "<")  ? IRInstr::CMP_LT
-                     : (opStr == ">")  ? IRInstr::CMP_GT
-                                       : throw std::runtime_error("Unknown comparison operator");
+    IRInstr::Op op = (opStr == "<")   ? IRInstr::CMP_LT
+                     : (opStr == ">") ? IRInstr::CMP_GT
+                                      : throw std::runtime_error("Unknown comparison operator");
     emit({op, t, l, r});
     return t;
 }

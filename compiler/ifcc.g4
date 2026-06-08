@@ -2,7 +2,7 @@ grammar ifcc;
 
 axiom : prog EOF ;
 
-prog : 'int' 'main' '(' ')' '{' stmt* '}' ;
+prog : 'int' 'main' '(' ')' block ;
 
 stmt 
     : decl_stmt 
@@ -10,7 +10,10 @@ stmt
     | return_stmt
     | putchar_stmt
     | getchar_stmt 
+    | block
     ;
+
+block : '{' stmt* '}' ;
 decl_stmt : 'int' decl_item (',' decl_item)* ';' ;
 decl_item : ID ('=' expr)? ;
 assign_stmt : ID '=' expr ';' ;

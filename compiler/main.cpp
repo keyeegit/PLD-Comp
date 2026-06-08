@@ -79,7 +79,7 @@ int main(int argn, const char **argv)
     }
 
     // Passe 2 : génération IR
-    IRGenVisitor irgen(stv.symbolTable);
+    IRGenVisitor irgen(stv.globalSymbolTable);
     irgen.visit(tree);
 
     // Passe 3 : génération assembleur
