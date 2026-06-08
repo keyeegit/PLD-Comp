@@ -3,40 +3,54 @@
 
 antlrcpp::Any SymbolTableVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
-    // Visit all statements and the return statement
-    visitChildren(ctx);
+    visit(ctx->block());
+    return 0;
+}
 
-    // Check declared but never used variables
-    for (auto &[name, offset] : symbolTable)
+antlrcpp::Any SymbolTableVisitor::visitBlock(ifccParser::BlockContext *ctx)
+{
+    scopeStack.push_back({}); // Nouveau sous-scope d'accolades
+
+    for (auto *stmt : ctx->stmt())
     {
-        if (!usedVars.count(name))
-            std::cerr << "warning: variable '" << name << "' declared but never used\n";
+        this->visit(stmt);
     }
+
+    scopeStack.pop_back(); // Les variables C meurent pour le C, mais restent dans globalSymbolTable !
+
     return 0;
 }
 
 antlrcpp::Any SymbolTableVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *ctx)
 {
-    for (auto* item : ctx->decl_item())
+    for (auto *item : ctx->decl_item())
     {
         std::string name = item->ID()->getText();
 
-        if (symbolTable.count(name))
+        // Interdit de redéclarer dans le MÊME bloc
+        if (scopeStack.back().count(name))
         {
             std::cerr << "error: variable '" << name << "' declared more than once\n";
             hasError = true;
         }
         else
         {
+            // On génère un nom unique pour l'IR (ex: "a_0")
+            std::string uniqueName = name + "_b" + std::to_string(scopeStack.size());
+
+            // On lie le nom C au nom unique dans le bloc courant
+            scopeStack.back()[name] = uniqueName;
+
+            // On alloue son offset dans la table globale (qui ne sera JAMAIS vidée)
             nextOffset -= 4;
-            symbolTable[name] = nextOffset;
-            std::cerr << "debug: variable '" << name << "' -> index " << nextOffset << "\n";
+            globalSymbolTable[uniqueName] = nextOffset;
+
         }
 
         if (item->expr())
         {
             this->visit(item->expr());
-            usedVars.insert(name);
+            usedVars.insert(getUniqueName(name));
         }
     }
     return 0;
@@ -44,44 +58,44 @@ antlrcpp::Any SymbolTableVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *c
 
 antlrcpp::Any SymbolTableVisitor::visitAssign_stmt(ifccParser::Assign_stmtContext *ctx)
 {
-    // Check LHS variable is declared
     std::string lhs = ctx->ID()->getText();
-    if (!symbolTable.count(lhs))
+    std::string uniqueName = getUniqueName(lhs);
+
+    if (uniqueName == "")
     {
         std::cerr << "error: variable '" << lhs << "' used but not declared\n";
         hasError = true;
     }
     else
     {
-        usedVars.insert(lhs);
+        usedVars.insert(uniqueName);
     }
 
-    // Check RHS if it's a variable (not a constant)
     if (ctx->expr())
-    {
         this->visit(ctx->expr());
-    }
-
-    return 0;
-}
-
-antlrcpp::Any SymbolTableVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
-{
-    this->visit(ctx->expr());
     return 0;
 }
 
 antlrcpp::Any SymbolTableVisitor::visitIdExpr(ifccParser::IdExprContext *ctx)
 {
     std::string name = ctx->ID()->getText();
-    if (!symbolTable.count(name))
+    std::string uniqueName = getUniqueName(name);
+
+    if (uniqueName == "")
     {
         std::cerr << "error: variable '" << name << "' used but not declared\n";
         hasError = true;
     }
     else
     {
-        usedVars.insert(name);
+        usedVars.insert(uniqueName);
     }
+    return 0;
+}
+
+antlrcpp::Any SymbolTableVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
+{
+    // Le return visite simplement son expression, peu importe où il est placé
+    this->visit(ctx->expr());
     return 0;
 }

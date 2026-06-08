@@ -10,6 +10,7 @@ public:
     const IRProgram &getProgram() const { return program; }
 
     antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
+    antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
     antlrcpp::Any visitDecl_stmt(ifccParser::Decl_stmtContext *ctx) override;
     antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
     antlrcpp::Any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
@@ -34,6 +35,18 @@ private:
     IRProgram program;
     int nextTempOffset = 0;
     int tempCount = 0;
+
+    std::vector<std::map<std::string, std::string>> scopeStack;
+
+    std::string getUniqueName(const std::string &name)
+    {
+        for (auto it = scopeStack.rbegin(); it != scopeStack.rend(); ++it)
+        {
+            if (it->count(name))
+                return (*it)[name];
+        }
+        return name; // Au cas où, on replie sur le nom de base
+    }
 
     std::string newTemp();
     void emit(IRInstr i) { program.instrs.push_back(i); }
