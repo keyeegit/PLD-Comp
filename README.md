@@ -13,7 +13,8 @@ GARNIER Axel, HUDE Dimitri, KUSIAK Guillaume, NADEAU Paul, REYDET Baptiste, TRAN
 | Déclaration de variable (n'importe où) | `int x;` ou `int x = expr;`                           |
 | Affectation de variable                | `x = expr;`                                           |
 | Instruction `return`                   | Retour d'une expression entière                       |
-| Table des symboles                     | Détection des variables non déclarées et des doublons |
+| Vérification variable non déclarée     | Erreur si une variable est utilisée sans avoir été déclarée |
+| Vérification double déclaration        | Erreur si une variable est déclarée deux fois dans la même portée |
 | Avertissement variable inutilisée      | Warning si une variable est déclarée mais jamais lue  |
 | Génération x86-64                      | Code assembleur pour Linux / Intel                    |
 | Génération ARM64                       | Code assembleur pour macOS Apple Silicon              |
