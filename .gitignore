@@ -79,3 +79,9 @@ ifcc-test-output/
 # Medias
 # Garder le sujet
 *.pdf
+
+#CLAUDE
+CLAUDE.MD
+
+.vscode/
+*.vscode/*
