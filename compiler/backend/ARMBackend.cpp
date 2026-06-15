@@ -33,6 +33,11 @@ static void emitEpilogue(std::ostream &o, int sz)
     o << "    ret\n";
 }
 
+/*
+  w8, w9, w10 are used as temporary registers
+  w0 - w7 are used for function arguments and return value
+  w0 is used for arguments and return value
+*/
 static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
 {
     auto adr = [&](const std::string &n)
@@ -41,128 +46,129 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
     switch (i.op)
     {
     case IRInstr::LDCONST:
-        o << "    mov w8, #" << i.imm << "\n";
-        o << "    str w8, " << adr(i.dest) << "\n";
+        o << "    mov w8, #" << i.imm << "\n";      // Load immediate value into w8
+        o << "    str w8, " << adr(i.dest) << "\n"; // Store w8 into the destination variable
         break;
     case IRInstr::COPY:
-        o << "    ldr w8, " << adr(i.src1) << "\n";
+        o << "    ldr w8, " << adr(i.src1) << "\n"; // Load the value from src1 into w8
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::ADD:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    ldr w9, " << adr(i.src2) << "\n";
-        o << "    add w8, w8, w9\n";
+        o << "    add w8, w8, w9\n"; // Add w8 and w9, store result in w8
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::SUB:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    ldr w9, " << adr(i.src2) << "\n";
-        o << "    sub w8, w8, w9\n";
+        o << "    sub w8, w8, w9\n"; // Subtract w9 from w8, store result in w8
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::MUL:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    ldr w9, " << adr(i.src2) << "\n";
-        o << "    mul w8, w8, w9\n";
+        o << "    mul w8, w8, w9\n"; // Multiply w8 and w9, store result in w8
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::DIV:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    ldr w9, " << adr(i.src2) << "\n";
-        o << "    sdiv w8, w8, w9\n";
+        o << "    sdiv w8, w8, w9\n"; // Signed division of w8 by w9, store result in w8
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::MOD:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    ldr w9, " << adr(i.src2) << "\n";
-        o << "    sdiv w10, w8, w9\n";
-        o << "    msub w8, w10, w9, w8\n";
+        o << "    sdiv w10, w8, w9\n";     // Signed division of w8 by w9, store quotient in w10
+        o << "    msub w8, w10, w9, w8\n"; // Multiply quotient by divisor and subtract from dividend
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::NEG:
         o << "    ldr w8, " << adr(i.src1) << "\n";
-        o << "    neg w8, w8\n";
+        o << "    neg w8, w8\n"; // Negate the value in w8
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::RET:
         if (!i.src1.empty())
             o << "    ldr w0, " << adr(i.src1) << "\n";
-            o << "    b .Lexit_" << prog.funcName << "\n";
+        o << "    b .Lexit_" << prog.funcName << "\n";
         break;
     case IRInstr::CMP_EQ:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    ldr w9, " << adr(i.src2) << "\n";
-        o << "    cmp w8, w9\n";
-        o << "    cset w8, eq\n";
+        o << "    cmp w8, w9\n";  // compare w8 and w9, update NZCV flags
+        o << "    cset w8, eq\n"; // Set w8 to 1 if equal, 0 otherwise (Z = 1 if equal)
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::CMP_NEQ:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    ldr w9, " << adr(i.src2) << "\n";
-        o << "    cmp w8, w9\n";
-        o << "    cset w8, ne\n";
+        o << "    cmp w8, w9\n";  // compare w8 and w9, update NZCV flags
+        o << "    cset w8, ne\n"; // Set w8 to 1 if not equal, 0 otherwise (Z = 0 if equal)
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::CMP_LT:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    ldr w9, " << adr(i.src2) << "\n";
-        o << "    cmp w8, w9\n";
-        o << "    cset w8, lt\n";
+        o << "    cmp w8, w9\n";  // compare w8 and w9, update NZCV flags
+        o << "    cset w8, lt\n"; // Set w8 to 1 if less than, 0 otherwise (N != V)
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::CMP_GT:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    ldr w9, " << adr(i.src2) << "\n";
-        o << "    cmp w8, w9\n";
-        o << "    cset w8, gt\n";
+        o << "    cmp w8, w9\n";  // compare w8 and w9, update NZCV flags
+        o << "    cset w8, gt\n"; // Set w8 to 1 if greater than, 0 otherwise (Z = 0 and N = V)
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::CMP_AND:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    ldr w9, " << adr(i.src2) << "\n";
-        o << "    and w8, w8, w9\n";
+        o << "    and w8, w8, w9\n"; // Bitwise AND of w8 and w9, store result in w8
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::CMP_OR:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    ldr w9, " << adr(i.src2) << "\n";
-        o << "    orr w8, w8, w9\n";
+        o << "    orr w8, w8, w9\n"; // Bitwise OR of w8 and w9, store result in w8
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::CMP_XOR:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    ldr w9, " << adr(i.src2) << "\n";
-        o << "    eor w8, w8, w9\n";
+        o << "    eor w8, w8, w9\n"; // Bitwise XOR of w8 and w9, store result in w8
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::NOT:
         o << "    ldr w8, " << adr(i.src1) << "\n";
-        o << "    cmp w8, #0\n";
-        o << "    cset w8, eq\n";
+        o << "    cmp w8, #0\n";  // Compare w8 with 0, update NZCV flags
+        o << "    cset w8, eq\n"; // Set w8 to 1 if equal, 0 otherwise
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::PUTCHAR:
         o << "    ldr w0, " << adr(i.src1) << "\n";
-        o << "    bl _putchar\n";
+        o << "    bl _putchar\n"; // Call the _putchar function, which expects the character to print in w0
         break;
     case IRInstr::GETCHAR:
-        o << "    bl _getchar\n";
+        o << "    bl _getchar\n"; // Call the _getchar function, which returns the read character in w0
         o << "    str w0, " << adr(i.dest) << "\n";
         break;
     case IRInstr::LABEL:
         o << i.dest << ":\n";
         break;
 
+    // b -> branch (unconditional jump), no return address is stored
+    // bl -> branch with link (function call), return address is stored in x30 (LR)
     case IRInstr::JMP:
-        o << "    b " << i.dest << "\n";
+        o << "    b " << i.dest << "\n"; // jump to the label specified in dest
         break;
 
     case IRInstr::CMP_CBR:
         o << "    ldr w8, " << adr(i.src1) << "\n";
-        o << "    cbz w8, " << i.dest << "\n";
+        o << "    cbz w8, " << i.dest << "\n"; // if w8 is zero, jump to the label specified in dest
         break;
     case IRInstr::PARAM:
-        // We assume that parameters are passed in x0-x7, so we just need to store them in the right place on the stack
         o << "    str w" << i.imm << ", " << adr(i.dest) << "\n";
         break;
     case IRInstr::CALL:
@@ -172,7 +178,11 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         if (!i.dest.empty())
             o << "    str w0, " << adr(i.dest) << "\n";
         break;
-    case IRInstr::STORE_ARRAY: {
+    // w10 -> temporary register for array index
+    // w11 -> temporary register for array value
+    // x9 -> temporary register for base address of the array
+    case IRInstr::STORE_ARRAY:
+    {
         int baseOff = prog.symbols.at(i.dest);
         o << "    ldr w10, " << adr(i.src1) << "\n";
         o << "    ldr w11, " << adr(i.src2) << "\n";
@@ -183,7 +193,11 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         o << "    str w11, [x9, w10, uxtw #2]\n";
         break;
     }
-    case IRInstr::LOAD_ARRAY: {
+    // w10 -> temporary register for array index
+    // w11 -> temporary register for array value
+    // x9 -> temporary register for base address of the array
+    case IRInstr::LOAD_ARRAY:
+    {
         int baseOff = prog.symbols.at(i.src1);
         o << "    ldr w10, " << adr(i.src2) << "\n";
         if (baseOff >= 0)
