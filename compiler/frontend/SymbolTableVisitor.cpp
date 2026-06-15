@@ -16,7 +16,7 @@ antlrcpp::Any SymbolTableVisitor::visitBlock(ifccParser::BlockContext *ctx)
         this->visit(stmt);
     }
 
-    scopeStack.pop_back(); 
+    scopeStack.pop_back();
 
     return 0;
 }
@@ -44,7 +44,6 @@ antlrcpp::Any SymbolTableVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *c
             // On alloue son offset dans la table globale (qui ne sera JAMAIS vidée)
             nextOffset -= 4;
             globalSymbolTable[uniqueName] = nextOffset;
-
         }
 
         if (item->expr())
@@ -102,10 +101,18 @@ antlrcpp::Any SymbolTableVisitor::visitReturn_stmt(ifccParser::Return_stmtContex
 
 antlrcpp::Any SymbolTableVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 {
-    visit(ctx->expr());       
-    visit(ctx->stmt(0));      
-    if (ctx->stmt().size() > 1) {
-        visit(ctx->stmt(1));  
+    visit(ctx->expr());
+    visit(ctx->stmt(0));
+    if (ctx->stmt().size() > 1)
+    {
+        visit(ctx->stmt(1));
     }
+    return 0;
+}
+
+antlrcpp::Any SymbolTableVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
+{
+    visit(ctx->expr());
+    visit(ctx->stmt());
     return 0;
 }

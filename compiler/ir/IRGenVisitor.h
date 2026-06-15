@@ -31,6 +31,7 @@ public:
     antlrcpp::Any visitPutchar_stmt(ifccParser::Putchar_stmtContext *ctx) override;
     antlrcpp::Any visitGetchar_stmt(ifccParser::Getchar_stmtContext *ctx) override;
     antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
+    antlrcpp::Any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
 
 
 private:

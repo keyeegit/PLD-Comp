@@ -25,4 +25,4 @@ GARNIER Axel, HUDE Dimitri, KUSIAK Guillaume, NADEAU Paul, REYDET Baptiste, TRAN
 | `getchar`                              | Lecture d'un caractère depuis stdin                   |
 | Gestion de contexte avec les blocs de code { } | Gestion de contexte avec les blocs de code { }|
 | Support des portées de variables et du shadowing | Support des portées de variables et du shadowing |
-| Les structures de controle if, else    | Les structures de controle if, else                   |
+| Les structures de controle if, else, while | Les structures de controle if, else, while        |

@@ -249,3 +249,29 @@ antlrcpp::Any IRGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
 
     return 0;
 }
+
+antlrcpp::Any IRGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
+{
+    std::string labelStart = newLabel();
+    std::string labelEnd = newLabel();
+
+    // 1. On pose le label de début de la boucle
+    emit({IRInstr::LABEL, labelStart, "", ""});
+
+    // 2. On évalue la condition
+    std::string cond = str(visit(ctx->expr()));
+
+    // 3. Si la condition est FAUSSE (égale à 0), on saute à la fin de la boucle
+    emit({IRInstr::CMP_CBR, labelEnd, cond, ""});
+
+    // 4. On visite le corps de la boucle
+    visit(ctx->stmt());
+
+    // 5. On saute au début pour réévaluer la condition
+    emit({IRInstr::JMP, labelStart, "", ""});
+
+    // 6. On pose le label de fin de la boucle
+    emit({IRInstr::LABEL, labelEnd, "", ""});
+
+    return 0;
+}

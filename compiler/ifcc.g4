@@ -11,6 +11,7 @@ stmt
     | putchar_stmt
     | getchar_stmt 
     | if_stmt
+    | while_stmt
     | block
     ;
 
@@ -21,6 +22,7 @@ assign_stmt : ID '=' expr ';' ;
 putchar_stmt : 'putchar' '(' expr ')' ';' ;
 getchar_stmt : 'getchar' '(' ')' ';' ;
 if_stmt : 'if' '(' expr ')' stmt ('else' stmt)? ;
+while_stmt : 'while' '(' expr ')' stmt ;
 
 expr
     : '-' expr                          # unaryMinusExpr
