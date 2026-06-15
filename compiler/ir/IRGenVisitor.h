@@ -38,6 +38,8 @@ public:
     antlrcpp::Any visitFunc_def(ifccParser::Func_defContext *ctx) override;
     antlrcpp::Any visitCallExpr(ifccParser::CallExprContext *ctx) override;
     antlrcpp::Any visitCall_stmt(ifccParser::Call_stmtContext *ctx) override;
+    antlrcpp::Any visitArrayAccessExpr(ifccParser::ArrayAccessExprContext *ctx) override;
+    antlrcpp::Any visitArray_assign_stmt(ifccParser::Array_assign_stmtContext *ctx) override;
 
 private:
     const std::map<std::string, std::map<std::string, int>> &funcSymbols;

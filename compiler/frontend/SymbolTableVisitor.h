@@ -25,6 +25,7 @@ public:
     virtual antlrcpp::Any visitCall_stmt(ifccParser::Call_stmtContext *ctx) override;
     virtual antlrcpp::Any visitCallExpr(ifccParser::CallExprContext *ctx) override;
     virtual antlrcpp::Any visitFunc_def(ifccParser::Func_defContext *ctx) override;
+    virtual antlrcpp::Any visitArrayAccessExpr(ifccParser::ArrayAccessExprContext *ctx) override;
 
     std::map<std::string, FuncInfo> funcTable;
     std::map<std::string, std::map<std::string, int>> funcSymbolTables;

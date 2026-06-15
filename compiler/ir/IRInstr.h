@@ -31,6 +31,8 @@ struct IRInstr
         JMP,
         PARAM,
         CALL,
+        STORE_ARRAY,
+        LOAD_ARRAY,
     };
     Op op;
     std::string dest;
