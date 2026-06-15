@@ -10,6 +10,7 @@ type : 'int' | 'void' ;
 stmt 
     : decl_stmt 
     | assign_stmt 
+    | array_assign_stmt
     | return_stmt
     | putchar_stmt
     | getchar_stmt 
@@ -22,8 +23,9 @@ stmt
 call_stmt: ID '(' (expr (',' expr)*)? ')' ';' ;
 block : '{' stmt* '}' ;
 decl_stmt : 'int' decl_item (',' decl_item)* ';' ;
-decl_item : ID ('=' expr)? ;
+decl_item : ID ('[' CONST ']')? ('=' expr)? ;
 assign_stmt : ID '=' expr ';' ;
+array_assign_stmt : ID '[' expr ']' '=' expr ';' ;
 putchar_stmt : 'putchar' '(' expr ')' ';' ;
 getchar_stmt : 'getchar' '(' ')' ';' ;
 if_stmt : 'if' '(' expr ')' stmt ('else' stmt)? ;
@@ -41,6 +43,7 @@ expr
     | expr '|' expr                     # bitOrExpr
     | '(' expr ')'                      # parenExpr
     | ID '(' (expr (',' expr)*)? ')'    # callExpr
+    | ID '[' expr ']'                   # arrayAccessExpr
     | ID                                # idExpr
     | CONST                             # constExpr
     | CHAR_CONST                        # charConstExpr

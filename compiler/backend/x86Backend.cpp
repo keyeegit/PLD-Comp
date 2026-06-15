@@ -165,12 +165,28 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         o << "    je " << i.dest << "\n";
         break;
     case IRInstr::PARAM:
-        o << "    movl " << adr(i.src1) << ", " << regex[i.imm] << "\n";
+        o << "    movl " << regex[i.imm] << ", " << adr(i.dest) << "\n";
         break;
     case IRInstr::CALL:
         for (int j = 0; j < i.args.size(); ++j)
             o << "    movl " << adr(i.args[j]) << ", " << regex[j] << "\n";
         o << "    call " << i.src1 << "\n";
+        if (!i.dest.empty())
+            o << "    movl %eax, " << adr(i.dest) << "\n";
+        break;
+    case IRInstr::STORE_ARRAY:
+        o << "    movl " << adr(i.src1) << ", %ecx\n"; // Charge l'index dans %ecx
+        o << "    movl " << adr(i.src2) << ", %eax\n"; // Charge la valeur à copier dans %eax
+
+        // Syntaxe SIB AT&T : offset(%rbp, %index, multiplicateur)
+        o << "    movl %eax, " << prog.symbols.at(i.dest) << "(%rbp, %rcx, 4)\n";
+        break;
+    case IRInstr::LOAD_ARRAY:
+        o << "    movl " << adr(i.src2) << ", %ecx\n"; // Charge l'index dans %ecx
+        // Lit depuis la mémoire indexée vers le registre %eax
+        o << "    movl " << prog.symbols.at(i.src1) << "(%rbp, %rcx, 4), %eax\n";
+        // Sauvegarde le résultat dans le temporaire de destination
+        o << "    movl %eax, " << adr(i.dest) << "\n";
         break;
     }
 }

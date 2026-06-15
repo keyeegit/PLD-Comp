@@ -173,6 +173,19 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         if (!i.dest.empty())
             o << "    str w0, " << adr(i.dest) << "\n";
         break;
+    case IRInstr::STORE_ARRAY:
+        o << "    ldr w10, " << adr(i.src1) << "\n";
+        o << "    ldr w11, " << adr(i.src2) << "\n";
+        o << "    add x9, x29, #" << i.dest << "\n";
+        o << "    str w11, [x9, w10, uxtw #2]\n";
+        break;
+
+    case IRInstr::LOAD_ARRAY:
+        o << "    ldr w10, " << adr(i.src2) << "\n";
+        o << "    add x9, x29, #" << i.src1 << "\n";
+        o << "    ldr w11, [x9, w10, uxtw #2]\n";
+        o << "    str w11, " << adr(i.dest) << "\n";
+        break;
     }
 }
 
