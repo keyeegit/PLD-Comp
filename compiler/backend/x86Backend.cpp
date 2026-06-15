@@ -87,7 +87,9 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         o << "    movl %eax, " << adr(i.dest) << "\n";
         break;
     case IRInstr::RET:
-        o << "    movl " << adr(i.src1) << ", %eax\n";
+        if (!i.src1.empty())
+            o << "    movl " << adr(i.src1) << ", %eax\n";
+            o << "    jmp .Lexit_" << prog.funcName << "\n";
         break;
     case IRInstr::CMP_EQ:
         o << "    movl " << adr(i.src1) << ", %eax\n";
@@ -200,5 +202,6 @@ void x86Backend::generate(std::ostream &o, const IRProgram &prog)
     // If the last instruction is not a RET, we need to return 0 by default
     if (prog.instrs.empty() || prog.instrs.back().op != IRInstr::RET)
         o << "    movl $0, %eax\n";
+    o << ".Lexit_" << prog.funcName << ":\n";
     emitEpilogue(o, sz);
 }

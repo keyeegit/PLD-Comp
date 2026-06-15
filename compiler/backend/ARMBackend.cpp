@@ -86,9 +86,8 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         break;
     case IRInstr::RET:
         if (!i.src1.empty())
-        {
             o << "    ldr w0, " << adr(i.src1) << "\n";
-        }
+            o << "    b .Lexit_" << prog.funcName << "\n";
         break;
     case IRInstr::CMP_EQ:
         o << "    ldr w8, " << adr(i.src1) << "\n";
@@ -207,5 +206,6 @@ void ARMBackend::generate(std::ostream &o, const IRProgram &prog)
     // If the last instruction is not a RET, we need to return 0 by default
     if (prog.instrs.empty() || prog.instrs.back().op != IRInstr::RET)
         o << "    mov w0, #0\n";
+    o << ".Lexit_" << prog.funcName << ":\n";
     emitEpilogue(o, sz);
 }
