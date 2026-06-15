@@ -15,6 +15,7 @@ public:
     virtual antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
     virtual antlrcpp::Any visitReturn_stmt(ifccParser::Return_stmtContext *ctx) override;
     virtual antlrcpp::Any visitIdExpr(ifccParser::IdExprContext *ctx) override;
+    virtual antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
 
     std::map<std::string, int> globalSymbolTable;
     std::vector<std::map<std::string, std::string>> scopeStack;

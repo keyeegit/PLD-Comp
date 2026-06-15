@@ -10,6 +10,7 @@ stmt
     | return_stmt
     | putchar_stmt
     | getchar_stmt 
+    | if_stmt
     | block
     ;
 
@@ -19,6 +20,7 @@ decl_item : ID ('=' expr)? ;
 assign_stmt : ID '=' expr ';' ;
 putchar_stmt : 'putchar' '(' expr ')' ';' ;
 getchar_stmt : 'getchar' '(' ')' ';' ;
+if_stmt : 'if' '(' expr ')' stmt ('else' stmt)? ;
 
 expr
     : '-' expr                          # unaryMinusExpr

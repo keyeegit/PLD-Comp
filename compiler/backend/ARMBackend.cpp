@@ -147,6 +147,18 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         o << "    bl _getchar\n";
         o << "    str w0, " << adr(i.dest) << "\n";
         break;
+    case IRInstr::LABEL:
+        o << i.dest << ":\n";
+        break;
+
+    case IRInstr::JMP:
+        o << "    b " << i.dest << "\n";
+        break;
+
+    case IRInstr::CMP_CBR:
+        o << "    ldr w8, " << adr(i.src1) << "\n";
+        o << "    cbz w8, " << i.dest << "\n";
+        break;
     }
 }
 

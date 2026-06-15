@@ -152,6 +152,16 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         o << "    call getchar\n";
         o << "    movl %eax, " << adr(i.dest) << "\n";
         break;
+    case IRInstr::LABEL:
+        o << i.dest << ":\n";
+        break;
+    case IRInstr::JMP:
+        o << "    jmp " << i.dest << "\n";
+        break;
+    case IRInstr::CMP_CBR:
+        o << "    cmpl $0, " << adr(i.src1) << "\n";
+        o << "    je " << i.dest << "\n";
+        break;
     }
 }
 

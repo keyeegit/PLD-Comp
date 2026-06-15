@@ -30,6 +30,8 @@ public:
     antlrcpp::Any visitGetcharExpr(ifccParser::GetcharExprContext *ctx) override;
     antlrcpp::Any visitPutchar_stmt(ifccParser::Putchar_stmtContext *ctx) override;
     antlrcpp::Any visitGetchar_stmt(ifccParser::Getchar_stmtContext *ctx) override;
+    antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
+
 
 private:
     IRProgram program;
@@ -51,4 +53,7 @@ private:
     std::string newTemp();
     void emit(IRInstr i) { program.instrs.push_back(i); }
     std::string str(antlrcpp::Any a) { return std::any_cast<std::string>(a); }
+
+    int labelCount = 0;
+    std::string newLabel();
 };

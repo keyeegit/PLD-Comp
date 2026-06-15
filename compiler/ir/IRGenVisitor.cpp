@@ -18,6 +18,11 @@ std::string IRGenVisitor::newTemp()
     return name;
 }
 
+std::string IRGenVisitor::newLabel()
+{
+    return ".L" + std::to_string(labelCount++);
+}
+
 antlrcpp::Any IRGenVisitor::visitProg(ifccParser::ProgContext *ctx)
 {
     visit(ctx->block());
@@ -208,5 +213,39 @@ antlrcpp::Any IRGenVisitor::visitGetchar_stmt(ifccParser::Getchar_stmtContext *c
 {
     std::string t = newTemp();
     emit({IRInstr::GETCHAR, t});
+    return 0;
+}
+
+antlrcpp::Any IRGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
+{
+    std::string cond = str(visit(ctx->expr())); // Évalue la condition (donne un temp ou une var)
+    std::string labelElse = newLabel();
+    std::string labelEnd = newLabel();
+
+    // 1. Si la condition est FAUSSE (égale à 0), on saute au bloc Else (ou End s'il n'y a pas de else)
+    emit({IRInstr::CMP_CBR, labelElse, cond, ""}); 
+
+    // 2. On visite le corps du 'then'
+    visit(ctx->stmt(0));
+
+    // S'il y a un 'else'
+    if (ctx->stmt().size() > 1) {
+        // Si on a exécuté le 'then', on doit sauter par-dessus le 'else'
+        emit({IRInstr::JMP, labelEnd, "", ""}); 
+        
+        // On pose le label de l'alternative Else
+        emit({IRInstr::LABEL, labelElse, "", ""});
+        
+        // On visite le corps du 'else'
+        visit(ctx->stmt(1));
+        
+        // On pose le label de fin général
+        emit({IRInstr::LABEL, labelEnd, "", ""});
+    } 
+    else {
+        // S'il n'y a pas de 'else', le labelElse est en réalité le label de fin
+        emit({IRInstr::LABEL, labelElse, "", ""});
+    }
+
     return 0;
 }
