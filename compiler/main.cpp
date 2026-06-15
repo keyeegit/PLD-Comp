@@ -18,7 +18,7 @@
 using namespace antlr4;
 
 // Usage : ifcc [--arch x86|arm64] fichier.c
-static std::string parseArgs(int argn, const char** argv, std::string& arch)
+static std::string parseArgs(int argn, const char **argv, std::string &arch)
 {
 #ifdef __APPLE__
     arch = "arm64";
@@ -26,7 +26,8 @@ static std::string parseArgs(int argn, const char** argv, std::string& arch)
     arch = "x86";
 #endif
 
-    if (argn == 4 && std::string(argv[1]) == "--arch") {
+    if (argn == 4 && std::string(argv[1]) == "--arch")
+    {
         arch = argv[2];
         return argv[3];
     }
@@ -45,7 +46,8 @@ int main(int argn, const char **argv)
     std::stringstream in;
     {
         std::ifstream lecture(filename);
-        if (!lecture.good()) {
+        if (!lecture.good())
+        {
             std::cerr << "error: cannot read file: " << filename << std::endl;
             exit(1);
         }
@@ -57,15 +59,17 @@ int main(int argn, const char **argv)
     CommonTokenStream tokens(&lexer);
     tokens.fill();
 
-    if (lexer.getNumberOfSyntaxErrors() != 0) {
+    if (lexer.getNumberOfSyntaxErrors() != 0)
+    {
         std::cerr << "error: syntax error during lexing" << std::endl;
         exit(1);
     }
 
     ifccParser parser(&tokens);
-    tree::ParseTree* tree = parser.axiom();
+    tree::ParseTree *tree = parser.axiom();
 
-    if (parser.getNumberOfSyntaxErrors() != 0) {
+    if (parser.getNumberOfSyntaxErrors() != 0)
+    {
         std::cerr << "error: syntax error during parsing" << std::endl;
         exit(1);
     }
@@ -73,24 +77,29 @@ int main(int argn, const char **argv)
     // Passe 1 : analyse sémantique
     SymbolTableVisitor stv;
     stv.visit(tree);
-    if (stv.hasError) {
+    if (stv.hasError)
+    {
         std::cerr << "error: semantic error" << std::endl;
         exit(1);
     }
 
     // Passe 2 : génération IR
-    IRGenVisitor irgen(stv.globalSymbolTable);
+    IRGenVisitor irgen(stv.funcSymbolTables, stv.funcTable);
     irgen.visit(tree);
 
     // Passe 3 : génération assembleur
     x86Backend x86;
     ARMBackend arm;
-    IRBackend* backend = (arch == "arm64") ? (IRBackend*)&arm : (IRBackend*)&x86;
-    if (arch != "x86" && arch != "arm64") {
+    if (arch != "x86" && arch != "arm64")
+    {
         std::cerr << "error: unknown arch '" << arch << "' (x86 or arm64)" << std::endl;
         exit(1);
     }
-    backend->generate(std::cout, irgen.getProgram());
+    IRBackend *backend = (arch == "arm64") ? (IRBackend *)&arm : (IRBackend *)&x86;
+    for (const auto &prog : irgen.getPrograms())
+    {
+        backend->generate(std::cout, prog);
+    }
 
     return 0;
 }

@@ -85,7 +85,10 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
         o << "    str w8, " << adr(i.dest) << "\n";
         break;
     case IRInstr::RET:
-        o << "    ldr w0, " << adr(i.src1) << "\n";
+        if (!i.src1.empty())
+        {
+            o << "    ldr w0, " << adr(i.src1) << "\n";
+        }
         break;
     case IRInstr::CMP_EQ:
         o << "    ldr w8, " << adr(i.src1) << "\n";
@@ -158,6 +161,17 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
     case IRInstr::CMP_CBR:
         o << "    ldr w8, " << adr(i.src1) << "\n";
         o << "    cbz w8, " << i.dest << "\n";
+        break;
+    case IRInstr::PARAM:
+        // We assume that parameters are passed in x0-x7, so we just need to store them in the right place on the stack
+        o << "    str w" << i.imm << ", " << adr(i.dest) << "\n";
+        break;
+    case IRInstr::CALL:
+        for (size_t idx = 0; idx < i.args.size(); ++idx)
+            o << "    ldr w" << idx << ", " << adr(i.args[idx]) << "\n";
+        o << "    bl _" << i.src1 << "\n";
+        if (!i.dest.empty())
+            o << "    str w0, " << adr(i.dest) << "\n";
         break;
     }
 }

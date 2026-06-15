@@ -1,12 +1,6 @@
 #include "SymbolTableVisitor.h"
 #include <iostream>
 
-antlrcpp::Any SymbolTableVisitor::visitProg(ifccParser::ProgContext *ctx)
-{
-    visit(ctx->block());
-    return 0;
-}
-
 antlrcpp::Any SymbolTableVisitor::visitBlock(ifccParser::BlockContext *ctx)
 {
     scopeStack.push_back({});
@@ -94,8 +88,13 @@ antlrcpp::Any SymbolTableVisitor::visitIdExpr(ifccParser::IdExprContext *ctx)
 
 antlrcpp::Any SymbolTableVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
-    // Le return visite simplement son expression, peu importe où il est placé
-    this->visit(ctx->expr());
+    if (ctx->expr() && currentFuncReturnType == "void")
+    {
+        std::cerr << "error: void function cannot return a value\n";
+        hasError = true;
+    }
+    if (ctx->expr())
+        this->visit(ctx->expr());
     return 0;
 }
 
@@ -110,9 +109,96 @@ antlrcpp::Any SymbolTableVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
     return 0;
 }
 
+antlrcpp::Any SymbolTableVisitor::visitFunc_def(ifccParser::Func_defContext *ctx)
+{
+    std::string name = ctx->ID()->getText();
+    std::string retType = ctx->type()->getText();
+
+    FuncInfo info;
+    info.returnType = retType;
+
+    nextOffset = 0;
+    globalSymbolTable.clear();
+    scopeStack.clear();
+    scopeStack.push_back({});
+
+    if (ctx->param_list())
+    {
+        for (auto *param : ctx->param_list()->param())
+        {
+            std::string pname = param->ID()->getText();
+            info.paramTypes.push_back("int");
+            nextOffset -= 4;
+            std::string uniqueName = pname + "_b1";
+            scopeStack.back()[pname] = uniqueName;
+            globalSymbolTable[uniqueName] = nextOffset;
+        }
+    }
+
+    funcTable[name] = info;
+    currentFuncReturnType = retType;
+
+    visit(ctx->block());
+
+    funcSymbolTables[name] = globalSymbolTable;
+    return 0;
+}
+
+antlrcpp::Any SymbolTableVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
+{
+    std::string funcName = ctx->ID()->getText();
+    if (funcTable.count(funcName) == 0)
+    {
+        std::cerr << "error: function '" << funcName << "' called but not declared\n";
+        hasError = true;
+    }
+
+    const FuncInfo &info = funcTable[funcName];
+    if (ctx->expr().size() != info.paramTypes.size())
+    {
+        std::cerr << "error: function '" << funcName << "' called with wrong number of arguments\n";
+        hasError = true;
+    }
+
+    for (auto *arg : ctx->expr())
+    {
+        visit(arg);
+    }
+    return 0;
+}
+
 antlrcpp::Any SymbolTableVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
 {
     visit(ctx->expr());
     visit(ctx->stmt());
+    return 0;
+}
+antlrcpp::Any SymbolTableVisitor::visitCallExpr(ifccParser::CallExprContext *ctx)
+{
+    std::string funcName = ctx->ID()->getText();
+    if (funcTable.count(funcName) == 0)
+    {
+        std::cerr << "error: function '" << funcName << "' called but not declared\n";
+        hasError = true;
+    }
+    else
+    {
+        const FuncInfo &info = funcTable.at(funcName);
+        if (info.returnType == "void")
+        {
+            std::cerr << "error: void function '" << funcName << "' used in expression\n";
+            hasError = true;
+        }
+        if (ctx->expr().size() != info.paramTypes.size())
+        {
+            std::cerr << "error: function '" << funcName << "' called with wrong number of arguments\n";
+            hasError = true;
+        }
+    }
+
+    for (auto *arg : ctx->expr())
+    {
+        visit(arg);
+    }
     return 0;
 }

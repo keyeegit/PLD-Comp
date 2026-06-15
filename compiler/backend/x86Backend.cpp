@@ -35,6 +35,8 @@ static void emitEpilogue(std::ostream &o, int sz)
 
 static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
 {
+    static const char *regex[] = {"%edi", "%esi", "%edx", "%ecx", "%r8d", "%r9d"};
+
     auto adr = [&](const std::string &n)
     { return addr(n, prog); };
 
@@ -161,6 +163,14 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
     case IRInstr::CMP_CBR:
         o << "    cmpl $0, " << adr(i.src1) << "\n";
         o << "    je " << i.dest << "\n";
+        break;
+    case IRInstr::PARAM:
+        o << "    movl " << adr(i.src1) << ", " << regex[i.imm] << "\n";
+        break;
+    case IRInstr::CALL:
+        for (int j = 0; j < i.args.size(); ++j)
+            o << "    movl " << adr(i.args[j]) << ", " << regex[j] << "\n";
+        o << "    call " << i.src1 << "\n";
         break;
     }
 }

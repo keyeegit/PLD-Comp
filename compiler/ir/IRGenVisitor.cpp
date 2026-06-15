@@ -1,32 +1,23 @@
 #include "IRGenVisitor.h"
 
-IRGenVisitor::IRGenVisitor(const std::map<std::string, int> &symbolTable)
+IRGenVisitor::IRGenVisitor(
+    const std::map<std::string, std::map<std::string, int>> &funcSymbols,
+    const std::map<std::string, FuncInfo> &funcTables)
+    : funcSymbols(funcSymbols), funcTable(funcTables)
 {
-    program.funcName = "main";
-    program.symbols = symbolTable;
-    nextTempOffset = 0;
-    for (auto &[_, off] : symbolTable)
-        if (off < nextTempOffset)
-            nextTempOffset = off;
 }
 
 std::string IRGenVisitor::newTemp()
 {
     nextTempOffset -= 4;
     std::string name = "_t" + std::to_string(tempCount++);
-    program.symbols[name] = nextTempOffset;
+    current->symbols[name] = nextTempOffset;
     return name;
 }
 
 std::string IRGenVisitor::newLabel()
 {
     return ".L" + std::to_string(labelCount++);
-}
-
-antlrcpp::Any IRGenVisitor::visitProg(ifccParser::ProgContext *ctx)
-{
-    visit(ctx->block());
-    return 0;
 }
 
 antlrcpp::Any IRGenVisitor::visitBlock(ifccParser::BlockContext *ctx)
@@ -76,8 +67,15 @@ antlrcpp::Any IRGenVisitor::visitIdExpr(ifccParser::IdExprContext *ctx)
 
 antlrcpp::Any IRGenVisitor::visitReturn_stmt(ifccParser::Return_stmtContext *ctx)
 {
-    std::string src = str(visit(ctx->expr()));
-    emit({IRInstr::RET, "", src});
+    if (ctx->expr())
+    {
+        std::string src = str(visit(ctx->expr()));
+        emit({IRInstr::RET, "", src});
+    }
+    else
+    {
+        emit({IRInstr::RET, "", ""});
+    }
     return 0;
 }
 
@@ -223,26 +221,28 @@ antlrcpp::Any IRGenVisitor::visitIf_stmt(ifccParser::If_stmtContext *ctx)
     std::string labelEnd = newLabel();
 
     // 1. Si la condition est FAUSSE (égale à 0), on saute au bloc Else (ou End s'il n'y a pas de else)
-    emit({IRInstr::CMP_CBR, labelElse, cond, ""}); 
+    emit({IRInstr::CMP_CBR, labelElse, cond, ""});
 
     // 2. On visite le corps du 'then'
     visit(ctx->stmt(0));
 
     // S'il y a un 'else'
-    if (ctx->stmt().size() > 1) {
+    if (ctx->stmt().size() > 1)
+    {
         // Si on a exécuté le 'then', on doit sauter par-dessus le 'else'
-        emit({IRInstr::JMP, labelEnd, "", ""}); 
-        
+        emit({IRInstr::JMP, labelEnd, "", ""});
+
         // On pose le label de l'alternative Else
         emit({IRInstr::LABEL, labelElse, "", ""});
-        
+
         // On visite le corps du 'else'
         visit(ctx->stmt(1));
-        
+
         // On pose le label de fin général
         emit({IRInstr::LABEL, labelEnd, "", ""});
-    } 
-    else {
+    }
+    else
+    {
         // S'il n'y a pas de 'else', le labelElse est en réalité le label de fin
         emit({IRInstr::LABEL, labelElse, "", ""});
     }
@@ -273,5 +273,66 @@ antlrcpp::Any IRGenVisitor::visitWhile_stmt(ifccParser::While_stmtContext *ctx)
     // 6. On pose le label de fin de la boucle
     emit({IRInstr::LABEL, labelEnd, "", ""});
 
+    return 0;
+}
+
+antlrcpp::Any IRGenVisitor::visitFunc_def(ifccParser::Func_defContext *ctx)
+{
+    std::string name = ctx->ID()->getText();
+    programs.push_back({});
+    current = &programs.back();
+    current->funcName = name;
+    current->returnType = funcTable.at(name).returnType;
+    current->symbols = funcSymbols.at(name);
+
+    nextTempOffset = 0;
+    for (auto &[_, off] : current->symbols)
+        if (off < nextTempOffset)
+            nextTempOffset = off;
+    tempCount = 0;
+
+    scopeStack.clear();
+    scopeStack.push_back({});
+    int regIdx = 0;
+    if (ctx->param_list())
+    {
+        for (auto *param : ctx->param_list()->param())
+        {
+            std::string pname = param->ID()->getText();
+            std::string uniqueName = pname + "_b1";
+            scopeStack.back()[pname] = uniqueName;
+
+            emit({IRInstr::PARAM, uniqueName, "", "", regIdx++});
+        }
+    }
+
+    visit(ctx->block());
+    return 0;
+}
+
+antlrcpp::Any IRGenVisitor::visitCallExpr(ifccParser::CallExprContext *ctx)
+{
+    std::string fname = ctx->ID()->getText();
+    std::vector<std::string> argVars;
+    for (auto *argExpr : ctx->expr())
+        argVars.push_back(str(visit(argExpr)));
+
+    std::string dest = "";
+    if (funcTable.at(fname).returnType == "int")
+        dest = newTemp();
+
+    emit({IRInstr::CALL, dest, fname, "", 0, argVars});
+    return dest;
+}
+
+antlrcpp::Any IRGenVisitor::visitCall_stmt(ifccParser::Call_stmtContext *ctx)
+{
+    std::string fname = ctx->ID()->getText();
+    std::vector<std::string> argVars;
+    for (auto *argExpr : ctx->expr())
+        argVars.push_back(str(visit(argExpr)));
+
+    // dest vide = retour ignoré
+    emit({IRInstr::CALL, "", fname, "", 0, argVars});
     return 0;
 }

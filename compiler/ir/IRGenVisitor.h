@@ -2,14 +2,17 @@
 #include "antlr4-runtime.h"
 #include "generated/ifccBaseVisitor.h"
 #include "ir/IRInstr.h"
+#include "frontend/SymbolTableVisitor.h"
 
 class IRGenVisitor : public ifccBaseVisitor
 {
 public:
-    explicit IRGenVisitor(const std::map<std::string, int> &symbolTable);
-    const IRProgram &getProgram() const { return program; }
+    explicit IRGenVisitor(
+        const std::map<std::string, std::map<std::string, int>> &funcSymbols,
+        const std::map<std::string, FuncInfo> &funcTables);
 
-    antlrcpp::Any visitProg(ifccParser::ProgContext *ctx) override;
+    const std::vector<IRProgram> &getPrograms() const { return programs; }
+
     antlrcpp::Any visitBlock(ifccParser::BlockContext *ctx) override;
     antlrcpp::Any visitDecl_stmt(ifccParser::Decl_stmtContext *ctx) override;
     antlrcpp::Any visitAssign_stmt(ifccParser::Assign_stmtContext *ctx) override;
@@ -32,10 +35,16 @@ public:
     antlrcpp::Any visitGetchar_stmt(ifccParser::Getchar_stmtContext *ctx) override;
     antlrcpp::Any visitIf_stmt(ifccParser::If_stmtContext *ctx) override;
     antlrcpp::Any visitWhile_stmt(ifccParser::While_stmtContext *ctx) override;
-
+    antlrcpp::Any visitFunc_def(ifccParser::Func_defContext *ctx) override;
+    antlrcpp::Any visitCallExpr(ifccParser::CallExprContext *ctx) override;
+    antlrcpp::Any visitCall_stmt(ifccParser::Call_stmtContext *ctx) override;
 
 private:
-    IRProgram program;
+    const std::map<std::string, std::map<std::string, int>> &funcSymbols;
+    const std::map<std::string, FuncInfo> &funcTable;
+
+    std::vector<IRProgram> programs;
+    IRProgram *current = nullptr;
     int nextTempOffset = 0;
     int tempCount = 0;
 
@@ -52,7 +61,7 @@ private:
     }
 
     std::string newTemp();
-    void emit(IRInstr i) { program.instrs.push_back(i); }
+    void emit(IRInstr i) { current->instrs.push_back(i); }
     std::string str(antlrcpp::Any a) { return std::any_cast<std::string>(a); }
 
     int labelCount = 0;

@@ -29,17 +29,21 @@ struct IRInstr
         LABEL,
         CMP_CBR,
         JMP,
+        PARAM,
+        CALL,
     };
     Op op;
     std::string dest;
     std::string src1;
     std::string src2;
     int imm = 0;
+    std::vector<std::string> args;
 };
 
 struct IRProgram
 {
     std::string funcName;
+    std::string returnType;
     std::map<std::string, int> symbols;
     std::vector<IRInstr> instrs;
 };

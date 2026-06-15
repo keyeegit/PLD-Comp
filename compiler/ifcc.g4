@@ -1,8 +1,11 @@
 grammar ifcc;
 
-axiom : prog EOF ;
+axiom : func_def+ EOF ;
 
-prog : 'int' 'main' '(' ')' block ;
+func_def : type ID '(' param_list? ')' block ;
+param_list : param (',' param)* ;
+param : 'int' ID ;
+type : 'int' | 'void' ;
 
 stmt 
     : decl_stmt 
@@ -13,8 +16,10 @@ stmt
     | if_stmt
     | while_stmt
     | block
+    | call_stmt
     ;
 
+call_stmt: ID '(' (expr (',' expr)*)? ')' ';' ;
 block : '{' stmt* '}' ;
 decl_stmt : 'int' decl_item (',' decl_item)* ';' ;
 decl_item : ID ('=' expr)? ;
@@ -35,13 +40,14 @@ expr
     | expr '^' expr                     # bitXorExpr
     | expr '|' expr                     # bitOrExpr
     | '(' expr ')'                      # parenExpr
+    | ID '(' (expr (',' expr)*)? ')'    # callExpr
     | ID                                # idExpr
     | CONST                             # constExpr
     | CHAR_CONST                        # charConstExpr
     | 'getchar' '(' ')'            # getcharExpr
     ;
 
-return_stmt : RETURN expr ';' ;
+return_stmt : RETURN expr? ';' ;
 
 RETURN : 'return' ;
 CONST : [0-9]+ ;
