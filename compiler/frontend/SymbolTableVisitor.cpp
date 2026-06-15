@@ -35,9 +35,18 @@ antlrcpp::Any SymbolTableVisitor::visitDecl_stmt(ifccParser::Decl_stmtContext *c
             // On lie le nom C au nom unique dans le bloc courant
             scopeStack.back()[name] = uniqueName;
 
-            // On alloue son offset dans la table globale (qui ne sera JAMAIS vidée)
-            nextOffset -= 4;
-            globalSymbolTable[uniqueName] = nextOffset;
+            if (item->CONST() != nullptr)
+            {
+                int arraySize = std::stoi(item->CONST()->getText());
+
+                nextOffset -= (4 * arraySize);
+                globalSymbolTable[uniqueName] = nextOffset;
+            }
+            else
+            {
+                nextOffset -= 4;
+                globalSymbolTable[uniqueName] = nextOffset;
+            }
         }
 
         if (item->expr())
@@ -173,6 +182,7 @@ antlrcpp::Any SymbolTableVisitor::visitWhile_stmt(ifccParser::While_stmtContext 
     visit(ctx->stmt());
     return 0;
 }
+
 antlrcpp::Any SymbolTableVisitor::visitCallExpr(ifccParser::CallExprContext *ctx)
 {
     std::string funcName = ctx->ID()->getText();
@@ -200,5 +210,30 @@ antlrcpp::Any SymbolTableVisitor::visitCallExpr(ifccParser::CallExprContext *ctx
     {
         visit(arg);
     }
+    return 0;
+}
+
+antlrcpp::Any SymbolTableVisitor::visitArrayAccessExpr(ifccParser::ArrayAccessExprContext *ctx)
+{
+    std::string arrayName = ctx->ID()->getText();
+    std::string uniqueName = getUniqueName(arrayName);
+
+    if (uniqueName == "")
+    {
+        std::cerr << "error: array '" << arrayName << "' used but not declared\n";
+        hasError = true;
+    }
+    else
+    {
+
+        usedVars.insert(uniqueName);
+    }
+
+    // On visite aussi l'expression de l'index (au cas où ce soit une variable ou un calcul)
+    if (ctx->expr())
+    {
+        this->visit(ctx->expr());
+    }
+
     return 0;
 }
