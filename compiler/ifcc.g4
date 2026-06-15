@@ -54,5 +54,7 @@ CONST : [0-9]+ ;
 CHAR_CONST : '\'' (~['\\\r\n] | '\\' .) '\'' ;
 ID : [a-zA-Z][a-zA-Z0-9]* ;
 COMMENT : '/*' .*? '*/' -> skip ;
+LINE_COMMENT : '//' ~[\r\n]* -> skip ;
 DIRECTIVE : '#' .*? '\n' -> skip ;
 WS    : [ \t\r\n] -> channel(HIDDEN);
+
