@@ -279,7 +279,8 @@ for jobname in jobs:
         # test-case is a valid program. we should run it
         gccstatus=run_command("gcc -o exe-gcc gcc-asm.s", "gcc-2-link.txt")
     if gccstatus == 0: # then both compile and link stage went well
-        exegccstatus=run_command("./exe-gcc", "gcc-3-execute.txt")
+        stdin_redirect = "< input.txt" if os.path.isfile("input.txt") else "< /dev/null"
+        exegccstatus=run_command(f"./exe-gcc {stdin_redirect}", "gcc-3-execute.txt")
         if args.verbose >=2:
             dumpfile("gcc-3-execute.txt")
             
@@ -317,7 +318,7 @@ for jobname in jobs:
     ## both compilers  did produce an  executable, so now we  run both
     ## these executables and compare the results.
         
-    run_command("./exe-ifcc", "ifcc-3-execute.txt")
+    run_command(f"./exe-ifcc {stdin_redirect}", "ifcc-3-execute.txt")
     if open("gcc-3-execute.txt").read() != open("ifcc-3-execute.txt").read() :
         print("TEST FAIL (different results at execution)")
         all_ok=False
