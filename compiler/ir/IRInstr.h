@@ -7,39 +7,39 @@ struct IRInstr
 {
     enum Op
     {
-        LDCONST,
-        COPY,
-        ADD,
-        SUB,
-        MUL,
-        DIV,
-        MOD,
-        NEG,
-        RET,
-        CMP_EQ,
-        CMP_NEQ,
-        CMP_LT,
-        CMP_GT,
-        NOT,
-        CMP_AND,
-        CMP_OR,
-        CMP_XOR,
-        PUTCHAR,
-        GETCHAR,
-        LABEL,
-        CMP_CBR,
-        JMP,
-        PARAM,
-        CALL,
-        STORE_ARRAY,
-        LOAD_ARRAY,
+        LDCONST,     // Load constant into a variable
+        COPY,        // Copy value from one variable to another
+        ADD,         // Add two values
+        SUB,         // Subtract two values
+        MUL,         // Multiply two values
+        DIV,         // Divide two values
+        MOD,         // Modulo operation
+        NEG,         // Negate a value
+        RET,         // Return from function
+        CMP_EQ,      // Compare equal
+        CMP_NEQ,     // Compare not equal
+        CMP_LT,      // Compare less than
+        CMP_GT,      // Compare greater than
+        NOT,         // Logical not
+        CMP_AND,     // Logical and
+        CMP_OR,      // Logical or
+        CMP_XOR,     // Logical xor
+        PUTCHAR,     // Put character
+        GETCHAR,     // Get character
+        LABEL,       // Label
+        CMP_CBR,     // Conditional branch
+        JMP,         // Jump
+        PARAM,       // Parameter
+        CALL,        // Function call
+        STORE_ARRAY, // Store array element
+        LOAD_ARRAY,  // Load array element
     };
-    Op op;
-    std::string dest;
-    std::string src1;
-    std::string src2;
-    int imm = 0;
-    std::vector<std::string> args;
+    Op op;                         // The operation type of the instruction
+    std::string dest;              // The destination variable for the instruction
+    std::string src1;              // The first source variable for the instruction
+    std::string src2;              // The second source variable for the instruction
+    int imm = 0;                   // Immediate value for the instruction
+    std::vector<std::string> args; // Arguments for function calls
 };
 
 struct IRProgram

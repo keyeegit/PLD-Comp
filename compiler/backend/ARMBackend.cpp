@@ -10,25 +10,28 @@ static int stackSize(const IRProgram &prog)
     return ((-minOff + 15) / 16) * 16;
 }
 
+// returns the address of a variable in the stack frame
 static std::string addr(const std::string &name, const IRProgram &prog)
 {
     return "[x29, #" + std::to_string(prog.symbols.at(name)) + "]";
 }
 
-static void emitPrologue(std::ostream &o, const IRProgram &prog, int sz)
+// Prepares the stack frame
+static void emitPrologue(std::ostream &o, const IRProgram &prog, int stackSize)
 {
-    o << ".globl _" << prog.funcName << "\n";
-    o << "_" << prog.funcName << ":\n";
-    o << "    stp x29, x30, [sp, #-16]!\n";
+    o << ".globl _" << prog.funcName << "\n"; // Declare the function as global so it can be called from other files
+    o << "_" << prog.funcName << ":\n";       // Function label
+    o << "    stp x29, x30, [sp, #-16]!\n";   // stp -> store pair, store x29 (frame pointer) and x30 (link register)
     o << "    mov x29, sp\n";
-    if (sz > 0)
-        o << "    sub sp, sp, #" << sz << "\n";
+    if (stackSize > 0)
+        o << "    sub sp, sp, #" << stackSize << "\n";
 }
 
-static void emitEpilogue(std::ostream &o, int sz)
+// Cleans up the stack frame and returns from the function
+static void emitEpilogue(std::ostream &o, int stackSize)
 {
-    if (sz > 0)
-        o << "    add sp, sp, #" << sz << "\n";
+    if (stackSize > 0)
+        o << "    add sp, sp, #" << stackSize << "\n";
     o << "    ldp x29, x30, [sp], #16\n";
     o << "    ret\n";
 }
@@ -213,13 +216,17 @@ static void emitInstr(std::ostream &o, const IRInstr &i, const IRProgram &prog)
 
 void ARMBackend::generate(std::ostream &o, const IRProgram &prog)
 {
-    int sz = stackSize(prog);
+    int sz = stackSize(prog); // Calculate the required stack size for the function based on the symbols in the IRProgram
+
     emitPrologue(o, prog, sz);
+
     for (const auto &i : prog.instrs)
-        emitInstr(o, i, prog);
+        emitInstr(o, i, prog); // translate each IR instruction into ARM assembly and write it to the output stream
+
     // If the last instruction is not a RET, we need to return 0 by default
     if (prog.instrs.empty() || prog.instrs.back().op != IRInstr::RET)
         o << "    mov w0, #0\n";
+
     o << ".Lexit_" << prog.funcName << ":\n";
     emitEpilogue(o, sz);
 }
