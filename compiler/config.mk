@@ -23,3 +23,8 @@
 # ANTLRJAR=/home/kytsune/antlr4-install/antlr-4.13.2-complete.jar
 # ANTLRINC=/home/kytsune/antlr4-install/include/antlr4-runtime/
 # ANTLRLIB=/home/kytsune/antlr4-install/lib/libantlr4-runtime.a
+
+# Bao
+# ANTLRJAR=/home/baoanh/antlr4-install/antlr-4.13.2-complete.jar
+# ANTLRINC=/home/baoanh/antlr4-install/include/antlr4-runtime/
+# ANTLRLIB=/home/baoanh/antlr4-install/lib/libantlr4-runtime.a
