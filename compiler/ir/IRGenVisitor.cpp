@@ -176,6 +176,55 @@ antlrcpp::Any IRGenVisitor::visitBitOrExpr(ifccParser::BitOrExprContext *ctx)
     return t;
 }
 
+antlrcpp::Any IRGenVisitor::visitLogicalAndExpr(ifccParser::LogicalAndExprContext *ctx)
+{
+    std::string result = newTemp();
+    std::string labelFalse = newLabel();
+    std::string labelEnd = newLabel();
+
+    std::string left = str(visit(ctx->expr(0)));
+    emit({IRInstr::CMP_CBR, labelFalse, left, ""});
+
+    std::string right = str(visit(ctx->expr(1)));
+    emit({IRInstr::CMP_CBR, labelFalse, right, ""});
+
+    emit({IRInstr::LDCONST, result, "", "", 1});
+    emit({IRInstr::JMP, labelEnd, "", ""});
+
+    emit({IRInstr::LABEL, labelFalse, "", ""});
+    emit({IRInstr::LDCONST, result, "", "", 0});
+    emit({IRInstr::LABEL, labelEnd, "", ""});
+
+    return result;
+}
+
+antlrcpp::Any IRGenVisitor::visitLogicalOrExpr(ifccParser::LogicalOrExprContext *ctx)
+{
+    std::string result = newTemp();
+    std::string labelEvalRight = newLabel();
+    std::string labelFalse = newLabel();
+    std::string labelEnd = newLabel();
+
+    std::string left = str(visit(ctx->expr(0)));
+    emit({IRInstr::CMP_CBR, labelEvalRight, left, ""});
+
+    emit({IRInstr::LDCONST, result, "", "", 1});
+    emit({IRInstr::JMP, labelEnd, "", ""});
+
+    emit({IRInstr::LABEL, labelEvalRight, "", ""});
+    std::string right = str(visit(ctx->expr(1)));
+    emit({IRInstr::CMP_CBR, labelFalse, right, ""});
+
+    emit({IRInstr::LDCONST, result, "", "", 1});
+    emit({IRInstr::JMP, labelEnd, "", ""});
+
+    emit({IRInstr::LABEL, labelFalse, "", ""});
+    emit({IRInstr::LDCONST, result, "", "", 0});
+    emit({IRInstr::LABEL, labelEnd, "", ""});
+
+    return result;
+}
+
 antlrcpp::Any IRGenVisitor::visitNotExpr(ifccParser::NotExprContext *ctx)
 {
     std::string src = str(visit(ctx->expr()));

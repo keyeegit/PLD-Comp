@@ -42,7 +42,7 @@ GARNIER Axel, HUDE Dimitri, KUSIAK Guillaume, NADEAU Paul, REYDET Baptiste, TRAN
 - [ ] `break` et `continue`
 - [ ] Chaînes de caractères (tableaux de `char`)
 - [ ] `switch...case`
-- [ ] Opérateurs logiques paresseux `||`, `&&`
+- [x] Opérateurs logiques paresseux `||`, `&&`
 - [ ] Opérateurs d'affectation `+=`, `-=`, `++`, `--`
 
 ### Non prioritaires (NP)

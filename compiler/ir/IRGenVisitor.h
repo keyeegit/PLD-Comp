@@ -28,6 +28,8 @@ public:
     antlrcpp::Any visitBitAndExpr(ifccParser::BitAndExprContext *ctx) override;
     antlrcpp::Any visitBitXorExpr(ifccParser::BitXorExprContext *ctx) override;
     antlrcpp::Any visitBitOrExpr(ifccParser::BitOrExprContext *ctx) override;
+    antlrcpp::Any visitLogicalAndExpr(ifccParser::LogicalAndExprContext *ctx) override;
+    antlrcpp::Any visitLogicalOrExpr(ifccParser::LogicalOrExprContext *ctx) override;
     antlrcpp::Any visitNotExpr(ifccParser::NotExprContext *ctx) override;
     antlrcpp::Any visitCharConstExpr(ifccParser::CharConstExprContext *ctx) override;
     antlrcpp::Any visitGetcharExpr(ifccParser::GetcharExprContext *ctx) override;

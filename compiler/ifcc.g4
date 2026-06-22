@@ -41,6 +41,8 @@ expr
     | expr '&' expr                     # bitAndExpr
     | expr '^' expr                     # bitXorExpr
     | expr '|' expr                     # bitOrExpr
+    | expr '&&' expr                    # logicalAndExpr
+    | expr '||' expr                    # logicalOrExpr
     | '(' expr ')'                      # parenExpr
     | ID '(' (expr (',' expr)*)? ')'    # callExpr
     | ID '[' expr ']'                   # arrayAccessExpr
