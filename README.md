@@ -1,10 +1,78 @@
-# PLD-Comp — Compilateur C → x86/ARM64
+# PLD-Comp — Compilateur C vers assembleur
 
-GARNIER Axel, HUDE Dimitri, KUSIAK Guillaume, NADEAU Paul, REYDET Baptiste, TRAN Bao Anh
+Compilateur d'un sous-ensemble du langage C, générant du code assembleur x86-64 (Linux) ou ARM64 (macOS Apple Silicon).
+
+**Auteurs :** GARNIER Axel, HUDE Dimitri, KUSIAK Guillaume, NADEAU Paul, REYDET Baptiste, TRAN Bao Anh
 
 ---
 
-## Fonctionnalités implémentées
+## Prérequis
+
+- `g++` (C++17)
+- `make`
+- ANTLR 4.13 (jar + runtime C++)
+
+Configurez les chemins ANTLR dans [compiler/config.mk](compiler/config.mk) selon votre environnement (des exemples sont déjà présents dans le fichier pour chaque système).
+
+---
+
+## Compilation du compilateur
+
+```bash
+cd compiler
+make
+```
+
+L'exécutable `ifcc` est généré dans le dossier `compiler/`.
+
+---
+
+## Utilisation
+
+```bash
+./ifcc source.c
+```
+
+Le code assembleur est écrit sur la **sortie standard**. Pour produire un fichier puis l'exécuter :
+
+```bash
+./ifcc source.c > source.s
+gcc source.s -o mon_programme -no-pie
+./mon_programme
+```
+
+> Sur macOS (ARM64), l'assembleur généré cible Apple Silicon automatiquement.
+
+---
+
+## Langage supporté
+
+Le compilateur accepte un sous-ensemble du C :
+
+- Types : `int`, constantes caractères (`'a'`)
+- Opérations : `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`
+- Comparaisons : `==`, `!=`, `<`, `>`
+- Opérateurs logiques paresseux : `&&`, `||`
+- Opérateurs unaires : `-expr`, `!expr`
+- Déclaration de variables n'importe où dans un bloc
+- Tableaux à une dimension
+- Fonctions avec paramètres `int` ou `void`, et `return`
+- Structures de contrôle : `if / else`, `while`
+- Entrées/sorties : `putchar`, `getchar`
+- Portées imbriquées (*shadowing*)
+
+### Vérifications à la compilation
+
+Le compilateur signale les erreurs suivantes :
+
+- Variable utilisée sans être déclarée
+- Double déclaration dans la même portée
+- Appel de fonction avec un mauvais nombre d'arguments
+- Avertissement si une variable est déclarée mais jamais utilisée
+
+---
+
+## État des fonctionnalités
 
 ### Obligatoires
 
@@ -45,16 +113,29 @@ GARNIER Axel, HUDE Dimitri, KUSIAK Guillaume, NADEAU Paul, REYDET Baptiste, TRAN
 - [x] Opérateurs logiques paresseux `||`, `&&`
 - [ ] Opérateurs d'affectation `+=`, `-=`, `++`, `--`
 
-### Non prioritaires (NP)
+### Non prioritaires
 
 - [ ] Variables globales
 - [ ] Autres types (`inttypes.h`, `float`)
 - [ ] Opérateurs `<=`, `>=`, `<<`, `>>`
 - [ ] Structures de contrôle `for`, `do...while`
 
-###  Déconseillées (D)
+### Déconseillées
 
 - [ ] Séparation déclarations / définitions dans plusieurs fichiers
 - [ ] Support du préprocesseur (`#define`, `#include`, `#if`)
 - [ ] Structures et unions
 - [ ] Type `char` 8 bits complet
+
+---
+
+## Tests
+
+Un script de test est fourni pour valider le compilateur :
+
+```bash
+cd ..
+python3 ifcc-test.py testfiles/
+```
+
+Les cas de test se trouvent dans le dossier [testfiles/](testfiles/).
